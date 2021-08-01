@@ -1,8 +1,13 @@
 const { Category } = require("../models/category");
 const express = require("express");
 const router = express.Router();
-
+const multer = require("multer");
+const Storage = require("../helpers/storage");
 const ResponseController = require("../helpers/response-controller");
+
+const storage = Storage.buildStorageCategories();
+
+const uploadOptions = multer({ storage: storage });
 
 getAllCategories();
 getCategory();
@@ -42,8 +47,15 @@ function _getCategoryFromMongoDB(req) {
 }
 
 function postCategory() {
-  router.post("/", async (req, res) => {
-    let category = _createCategory(req);
+  router.post("/", uploadOptions.single("image"), async (req, res) => {
+    const file = req.file;
+    ResponseController.validateExistence(res, file, "No image in the request");
+    const fileName = file.filename;
+    const basePath = `${req.protocol}://${req.get(
+      "host"
+    )}/public/uploads/categories/`;
+    const URL = `${basePath}${fileName}`;
+    let category = _createCategory(req, URL);
     category = await _postCategoryToMongoDB(category);
     ResponseController.sendResponse(
       res,
@@ -53,10 +65,10 @@ function postCategory() {
   });
 }
 
-function _createCategory(req) {
+function _createCategory(req, URL) {
   return new Category({
     name: req.body.name,
-    image: req.body.image,
+    image: URL,
   });
 }
 

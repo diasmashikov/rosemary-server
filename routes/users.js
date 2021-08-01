@@ -1,151 +1,189 @@
-const {User} = require('../models/user');
-const express = require('express');
+const { User } = require("../models/user");
+const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const ResponseController = require("../helpers/response-controller");
+const ResponseHandler = require("../helpers/response-handler");
 
-router.get(`/`, async (req, res) =>{
-    const userList = await User.find().select('-passwordHash');
+getAllUsers();
+getUser();
+getNumberOfUsers();
+postRegisterUser();
+postLoginUser();
+updateUser();
+deleteUser();
 
-    if(!userList) {
-        res.status(500).json({success: false})
-    } 
-    res.send(userList);
-})
+function getAllUsers() {
+  router.get(`/`, async (req, res) => {
+    const userList = await _getAllUsersFromMongoDB();
 
-router.get('/:id', async(req,res)=>{
-    const user = await User.findById(req.params.id).select('-passwordHash');
+    ResponseController.sendResponse(res, userList, "There are no users");
+  });
+}
 
-    if(!user) {
-        res.status(500).json({message: 'The user with the given ID was not found.'})
-    } 
-    res.status(200).send(user);
-})
+function _getAllUsersFromMongoDB() {
+  return User.find().select("-passwordHash");
+}
 
-router.post('/', async (req,res)=>{
-    let user = new User({
-        name: req.body.name,
-        email: req.body.email,
-        passwordHash: bcrypt.hashSync(req.body.password, 10),
-        phone: req.body.phone,
-        isAdmin: req.body.isAdmin,
-        street: req.body.street,
-        apartment: req.body.apartment,
-        zip: req.body.zip,
-        city: req.body.city,
-        country: req.body.country,
+function getUser() {
+  router.get("/:id", async (req, res) => {
+    const user = await _getUserFromMongoDB(req);
+
+    ResponseController.sendResponse(
+      res,
+      user,
+      "The user with a given ID was not found"
+    );
+  });
+}
+
+function _getUserFromMongoDB(req) {
+  return User.findById(req.params.id).select("-passwordHash");
+}
+
+function getNumberOfUsers() {
+  router.get(`/get/count`, async (req, res) => {
+    const userCount = await _getNumberOfUsersFromMongoDB();
+
+    ResponseController.sendResponse(
+      res,
+      userCount.toString(),
+      "There are no users found"
+    );
+  });
+}
+
+function _getNumberOfUsersFromMongoDB() {
+  return User.countDocuments((count) => count);
+}
+
+function postRegisterUser() {
+  router.post("/register", async (req, res) => {
+    let user = await _createUser(req);
+    ResponseController.sendResponse(res, user, "The user cannot be created");
+  });
+}
+
+function _createUser(req) {
+  new _postUserToMongoDB(
+    User({
+      name: req.body.name,
+      email: req.body.email,
+      passwordHash: bcrypt.hashSync(req.body.password, 10),
+      phone: req.body.phone,
+      isAdmin: req.body.isAdmin,
+      street: req.body.street,
+      apartment: req.body.apartment,
+      zip: req.body.zip,
+      city: req.body.city,
+      country: req.body.country,
     })
-    user = await user.save();
+  );
+}
 
-    if(!user)
-    return res.status(400).send('the user cannot be created!')
+function _postUserToMongoDB(user) {
+  return user.save();
+}
 
-    res.send(user);
-})
-
-router.put('/:id',async (req, res)=> {
-
-    const userExist = await User.findById(req.params.id);
-    let newPassword
-    if(req.body.password) {
-        newPassword = bcrypt.hashSync(req.body.password, 10)
-    } else {
-        newPassword = userExist.passwordHash;
-    }
-
-    const user = await User.findByIdAndUpdate(
-        req.params.id,
-        {
-            name: req.body.name,
-            email: req.body.email,
-            passwordHash: newPassword,
-            phone: req.body.phone,
-            isAdmin: req.body.isAdmin,
-            street: req.body.street,
-            apartment: req.body.apartment,
-            zip: req.body.zip,
-            city: req.body.city,
-            country: req.body.country,
-        },
-        { new: true}
-    )
-
-    if(!user)
-    return res.status(400).send('the user cannot be created!')
-
-    res.send(user);
-})
-
-router.post('/login', async (req,res) => {
-    const user = await User.findOne({email: req.body.email})
+function postLoginUser() {
+  router.post("/login", async (req, res) => {
+    const user = await _getUserFromMongoDB();
     const secret = process.env.secret;
-    if(!user) {
-        return res.status(400).send('The user not found');
-    }
 
-    if(user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
-        const token = jwt.sign(
-            {
-                userId: user.id,
-                isAdmin: user.isAdmin
-            },
-            secret,
-            {expiresIn : '1d'}
-        )
-       
-        res.status(200).send({user: user.email , token: token}) 
-    } else {
-       res.status(400).send('password is wrong!');
-    }
+    ResponseController.validateExistence(res, user, "The user not found");
 
-    
-})
+    _verifyPassword(req, user, secret);
+  });
+}
 
+function _getUserFromMongoDB() {
+  return User.findOne({ email: req.body.email });
+}
 
-router.post('/register', async (req,res)=>{
-    let user = new User({
-        name: req.body.name,
-        email: req.body.email,
-        passwordHash: bcrypt.hashSync(req.body.password, 10),
-        phone: req.body.phone,
-        isAdmin: req.body.isAdmin,
-        street: req.body.street,
-        apartment: req.body.apartment,
-        zip: req.body.zip,
-        city: req.body.city,
-        country: req.body.country,
-    })
-    user = await user.save();
+function _verifyPassword(req, user, secret) {
+  if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
+    const token = _signIn(user, secret);
 
-    if(!user)
-    return res.status(400).send('the user cannot be created!')
+    res.status(200).send({ user: user.email, token: token });
+  } else {
+    res.status(400).send("password is wrong!");
+  }
+}
 
-    res.send(user);
-})
+function _signIn(user, secret) {
+  return jwt.sign(
+    {
+      userId: user.id,
+      isAdmin: user.isAdmin,
+    },
+    secret,
+    { expiresIn: "1d" }
+  );
+}
 
+//updates password for now
+function updateUser() {
+  router.put("/:id", async (req, res) => {
+    const userForCheck = await _getUserFromMongoDB(req);
 
-router.delete('/:id', (req, res)=>{
-    User.findByIdAndRemove(req.params.id).then(user =>{
-        if(user) {
-            return res.status(200).json({success: true, message: 'the user is deleted!'})
+    let newPassword = _updateOrNotPassword(req, userForCheck);
+
+    const user = await _updateUserFromMongoDB(req, newPassword);
+
+    ResponseHandler.sendResponse(res, user, "The user cannot be updated");
+  });
+}
+
+function _getUserFromMongoDB(req) {
+  return User.findById(req.params.id);
+}
+
+function _updateOrNotPassword(req, user) {
+  if (req.body.password) {
+    return bcrypt.hashSync(req.body.password, 10);
+  } else {
+    return user.passwordHash;
+  }
+}
+
+function _updateUserFromMongoDB(req, newPassword) {
+  return User.findByIdAndUpdate(
+    req.params.id,
+    {
+      name: req.body.name,
+      email: req.body.email,
+      passwordHash: newPassword,
+      phone: req.body.phone,
+      isAdmin: req.body.isAdmin,
+      street: req.body.street,
+      apartment: req.body.apartment,
+      zip: req.body.zip,
+      city: req.body.city,
+      country: req.body.country,
+    },
+    { new: true }
+  );
+}
+
+function deleteUser() {
+  router.delete("/:id", (req, res) => {
+    User.findByIdAndRemove(req.params.id)
+      .then((user) => {
+        if (user) {
+          return res
+            .status(200)
+            .json({ success: true, message: "the user is deleted!" });
         } else {
-            return res.status(404).json({success: false , message: "user not found!"})
+          return res
+            .status(404)
+            .json({ success: false, message: "user not found!" });
         }
-    }).catch(err=>{
-       return res.status(500).json({success: false, error: err}) 
-    })
-})
+      })
+      .catch((err) => {
+        return res.status(500).json({ success: false, error: err });
+      });
+  });
+}
 
-router.get(`/get/count`, async (req, res) =>{
-    const userCount = await User.countDocuments((count) => count)
-
-    if(!userCount) {
-        res.status(500).json({success: false})
-    } 
-    res.send({
-        userCount: userCount
-    });
-})
-
-
-module.exports =router;
+module.exports = router;

@@ -7,13 +7,7 @@ const multer = require("multer");
 const Storage = require("../helpers/storage");
 const ResponseController = require("../helpers/response-controller");
 
-const FILE_TYPE_MAP = {
-  "image/png": "png",
-  "image/jpeg": "jpeg",
-  "image/jpg": "jpg",
-};
-
-const storage = Storage.buildStorage();
+const storage = Storage.buildStorageProducts();
 
 const uploadOptions = multer({ storage: storage });
 
@@ -23,6 +17,8 @@ getNumberOfProducts();
 getNumberOfFeaturedProducts();
 postProduct();
 updateProduct();
+upsertProductImages();
+deleteProduct();
 
 function getAllProducts() {
   router.get(`/`, async (req, res) => {
@@ -104,7 +100,9 @@ function postProduct() {
     ResponseController.validateExistence(res, file, "No image in the request");
 
     const fileName = file.filename;
-    const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+    const basePath = `${req.protocol}://${req.get(
+      "host"
+    )}/public/uploads/products/`;
     const URL = `${basePath}${fileName}`;
     let product = _createProduct(req, URL);
     product = await _saveProductFromMongoDB(product);

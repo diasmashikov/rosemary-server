@@ -7,7 +7,7 @@ const FILE_TYPE_MAP = {
 };
 
 class Storage {
-  static buildStorage() {
+  static buildStorageProducts() {
     return multer.diskStorage({
       destination: function (req, file, cb) {
         const isValid = FILE_TYPE_MAP[file.mimetype];
@@ -16,7 +16,26 @@ class Storage {
         if (isValid) {
           uploadError = null;
         }
-        cb(uploadError, "public/uploads");
+        cb(uploadError, "public/uploads/products");
+      },
+      filename: function (req, file, cb) {
+        const fileName = file.originalname.split(" ").join("-");
+        const extension = FILE_TYPE_MAP[file.mimetype];
+        cb(null, `${fileName}-${Date.now()}.${extension}`);
+      },
+    });
+  }
+
+  static buildStorageCategories() {
+    return multer.diskStorage({
+      destination: function (req, file, cb) {
+        const isValid = FILE_TYPE_MAP[file.mimetype];
+        let uploadError = new Error("invalid image type");
+
+        if (isValid) {
+          uploadError = null;
+        }
+        cb(uploadError, "public/uploads/categories");
       },
       filename: function (req, file, cb) {
         const fileName = file.originalname.split(" ").join("-");
