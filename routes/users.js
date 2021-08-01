@@ -66,8 +66,8 @@ function postRegisterUser() {
 }
 
 function _createUser(req) {
-  new _postUserToMongoDB(
-    User({
+  return _postUserToMongoDB(
+    new User({
       name: req.body.name,
       email: req.body.email,
       passwordHash: bcrypt.hashSync(req.body.password, 10),

@@ -122,9 +122,15 @@ function _getCategoryFromMongoDB(req) {
 function _createProduct(req, URL) {
   return new Product({
     name: req.body.name,
-    description: req.body.description,
-    image: URL, // "http://localhost:3000/public/upload/image-2323232"
+    image: URL,
     price: req.body.price,
+    color: req.body.color,
+    size: req.body.size,
+    description: req.body.description,
+    material: req.body.material,
+    countryProducer: req.body.countryProducer,
+    style: req.body.style,
+    modelCharacteristics: req.body.modelCharacteristics,
     category: req.body.category,
     countInStock: req.body.countInStock,
     isFeatured: req.body.isFeatured,
