@@ -26,7 +26,7 @@ updateProduct();
 
 function getAllProducts() {
   router.get(`/`, async (req, res) => {
-    let filter = _filterProducts();
+    let filter = _filterProducts(req);
 
     const productList = await _getAllProductsFromMongoDB(filter);
 
@@ -40,7 +40,7 @@ function getAllProducts() {
 
 function _filterProducts(req) {
   if (req.query.categories) {
-    return (filter = { category: req.query.categories.split(",") });
+    return { category: req.query.categories.split(",") };
   }
   return {};
 }
