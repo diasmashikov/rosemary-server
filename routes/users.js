@@ -91,9 +91,9 @@ function postLoginUser() {
     const user = await _getUserFromMongoDB(req);
     const secret = process.env.secret;
 
-    ResponseController.validateExistence(req, res, user, "The user not found");
+    ResponseController.validateExistence(res, user, "The user not found");
 
-    _verifyPassword(req, user, secret);
+    _verifyPassword(req, res, user, secret);
   });
 }
 
