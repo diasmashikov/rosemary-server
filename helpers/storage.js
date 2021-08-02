@@ -1,9 +1,11 @@
 const multer = require("multer");
+var path = require("path");
 
 const FILE_TYPE_MAP = {
   "image/png": "png",
   "image/jpeg": "jpeg",
   "image/jpg": "jpg",
+  "image/JPG": "JPG",
 };
 
 class Storage {
@@ -19,9 +21,11 @@ class Storage {
         cb(uploadError, "public/uploads/products");
       },
       filename: function (req, file, cb) {
-        const fileName = file.originalname.split(" ").join("-");
-        const extension = FILE_TYPE_MAP[file.mimetype];
-        cb(null, `${fileName}-${Date.now()}.${extension}`);
+        const fileName = path.parse(
+          file.originalname.split(" ").join("-")
+        ).name;
+        const extension = path.extname(file.originalname);
+        cb(null, fileName + "-" + Date.now() + extension);
       },
     });
   }
@@ -38,9 +42,11 @@ class Storage {
         cb(uploadError, "public/uploads/categories");
       },
       filename: function (req, file, cb) {
-        const fileName = file.originalname.split(" ").join("-");
-        const extension = FILE_TYPE_MAP[file.mimetype];
-        cb(null, `${fileName}-${Date.now()}.${extension}`);
+        const fileName = path.parse(
+          file.originalname.split(" ").join("-")
+        ).name;
+        const extension = path.extname(file.originalname);
+        cb(null, fileName + "-" + Date.now() + extension);
       },
     });
   }

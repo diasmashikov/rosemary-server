@@ -3,7 +3,13 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const Storage = require("../helpers/storage");
+
 const ResponseController = require("../helpers/response-controller");
+const FileHandler = require("../helpers/file-handler");
+const { uploadFile, getFileStream } = require("../helpers/s3");
+const fs = require("fs");
+const util = require("util");
+const unlinkFile = util.promisify(fs.unlink);
 
 const storage = Storage.buildStorageCategories();
 
@@ -11,6 +17,7 @@ const uploadOptions = multer({ storage: storage });
 
 getAllCategories();
 getCategory();
+getCategoryImage();
 postCategory();
 updateCategory();
 deleteCategory();
@@ -46,15 +53,22 @@ function _getCategoryFromMongoDB(req) {
   return Category.findById(req.params.id);
 }
 
+function getCategoryImage() {
+  router.get("/images/:key", (req, res) => {
+    const key = req.params.key;
+    const readStream = getFileStream(key);
+    readStream.pipe(res);
+  });
+}
+
 function postCategory() {
   router.post("/", uploadOptions.single("image"), async (req, res) => {
     const file = req.file;
     ResponseController.validateExistence(res, file, "No image in the request");
-    const fileName = file.filename;
-    const basePath = `${req.protocol}://${req.get(
-      "host"
-    )}/public/uploads/categories/`;
-    const URL = `${basePath}${fileName}`;
+    const result = await uploadFile(file);
+    FileHandler.deleteFileFromUploads(file);
+    const basePath = `${req.protocol}://${req.get("host")}/categories/images/`;
+    const URL = `${basePath}${result.key}`;
     let category = _createCategory(req, URL);
     category = await _postCategoryToMongoDB(category);
     ResponseController.sendResponse(
