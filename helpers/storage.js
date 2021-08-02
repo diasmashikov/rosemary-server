@@ -39,7 +39,7 @@ class Storage {
         if (isValid) {
           uploadError = null;
         }
-        cb(uploadError, path.join(__dirname, "../upload"));
+        cb(uploadError, "public/uploads/categories");
       },
       filename: function (req, file, cb) {
         const fileName = path.parse(
