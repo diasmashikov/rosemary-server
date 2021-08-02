@@ -7,9 +7,6 @@ const Storage = require("../helpers/storage");
 const ResponseController = require("../helpers/response-controller");
 const FileHandler = require("../helpers/file-handler");
 const { uploadFile, getFileStream } = require("../helpers/s3");
-const fs = require("fs");
-const util = require("util");
-const unlinkFile = util.promisify(fs.unlink);
 
 const storage = Storage.buildStorageCategories();
 
@@ -69,6 +66,7 @@ function postCategory() {
     FileHandler.deleteFileFromUploads(file);
     const basePath = `${req.protocol}://${req.get("host")}/categories/images/`;
     const URL = `${basePath}${result.key}`;
+    console.log(URL);
     let category = _createCategory(req, URL);
     category = await _postCategoryToMongoDB(category);
     ResponseController.sendResponse(

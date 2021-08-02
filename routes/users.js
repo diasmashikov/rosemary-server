@@ -88,7 +88,7 @@ function _postUserToMongoDB(user) {
 
 function postLoginUser() {
   router.post("/login", async (req, res) => {
-    const user = await _getUserFromMongoDB();
+    const user = await _getUserFromMongoDBToUpdate();
     const secret = process.env.secret;
 
     ResponseController.validateExistence(res, user, "The user not found");
@@ -97,7 +97,7 @@ function postLoginUser() {
   });
 }
 
-function _getUserFromMongoDB() {
+function _getUserFromMongoDBToUpdate() {
   return User.findOne({ email: req.body.email });
 }
 

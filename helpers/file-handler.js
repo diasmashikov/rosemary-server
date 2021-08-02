@@ -3,8 +3,8 @@ const util = require("util");
 const unlinkFile = util.promisify(fs.unlink);
 
 class FileHandler {
-  static async deleteFileFromUploads(file) {
-    await unlinkFile(file.path);
+  static deleteFileFromUploads(file) {
+    unlinkFile(file.path);
   }
 }
 
