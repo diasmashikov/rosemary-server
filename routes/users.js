@@ -91,7 +91,7 @@ function postLoginUser() {
     const user = await _getUserFromMongoDB(req);
     const secret = process.env.secret;
 
-    ResponseController.validateExistence(res, user, "The user not found");
+    ResponseController.validateExistence(req, res, user, "The user not found");
 
     _verifyPassword(req, user, secret);
   });
@@ -101,7 +101,7 @@ function _getUserFromMongoDB(req) {
   return User.findOne({ email: req.body.email });
 }
 
-function _verifyPassword(req, user, secret) {
+function _verifyPassword(req, res, user, secret) {
   if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
     const token = _signIn(user, secret);
 
@@ -135,7 +135,7 @@ function updateUser() {
   });
 }
 
-function _getUserFromMongoDBtoUpdate(req) {
+function _getUserFromMongoDBToUpdate(req) {
   return User.findById(req.params.id);
 }
 
