@@ -13,6 +13,7 @@ const uploadOptions = multer({ storage: storage });
 
 getAllProducts();
 getProduct();
+getTotalValue();
 getNumberOfProducts();
 getNumberOfFeaturedProducts();
 postProduct();
@@ -61,11 +62,45 @@ function _getProductFromMongoDB(req) {
   return Product.findById(req.params.id).populate("category");
 }
 
+function getTotalValue() {
+  router.get("/get/totalValue", async (req, res) => {
+    const totalValue = await _getTotalValueFromMongoDB();
+
+    console.log(totalValue);
+
+    ResponseController.sendResponse(
+      res,
+      totalValue.pop(),
+      "The total product value cannot be generated"
+    );
+  });
+}
+
+function _getTotalValueFromMongoDB() {
+  return Product.aggregate([
+    {
+      $match: {
+        countryProducer: "Казахстан",
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalValue: { $sum: { $multiply: ["$price", "$countInStock"] } },
+      },
+    },
+  ]);
+}
+
 function getNumberOfProducts() {
   router.get(`/get/count`, async (req, res) => {
     const productCount = await _getNumberOfProductsFromMongoDB();
 
-    ResponseController.sendResponse(res, productCount, "There are no products");
+    ResponseController.sendResponse(
+      res,
+      productCount.toString(),
+      "There are no products"
+    );
   });
 }
 
