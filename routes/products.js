@@ -29,7 +29,7 @@ upsertProductImages();
 deleteProduct();
 
 function getAllProducts() {
-  router.get(`/`, async (req, res) => {
+  router.get(`/:category`, async (req, res) => {
     const productList = await _getAllProductsFromMongoDB(req.params.category);
 
     ResponseController.sendResponse(
