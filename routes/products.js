@@ -7,6 +7,12 @@ const multer = require("multer");
 const Storage = require("../helpers/storage");
 const ResponseController = require("../helpers/response-controller");
 
+const {
+  uploadFileProduct,
+  getFileProduct,
+  deleteFileProduct,
+} = require("../helpers/s3");
+
 const storage = Storage.buildStorageProducts();
 
 const uploadOptions = multer({ storage: storage });
@@ -16,6 +22,7 @@ getProduct();
 getTotalValue();
 getNumberOfProducts();
 getNumberOfFeaturedProducts();
+getProductImage();
 postProduct();
 updateProduct();
 upsertProductImages();
@@ -124,6 +131,14 @@ function _getNumberOfFeaturedProductsFromMongoDB(count) {
   return Product.find({ isFeatured: true }).limit(+count);
 }
 
+function getProductImage() {
+  router.get("/images/:key", (req, res) => {
+    const key = req.params.key;
+    const readStream = getFileProduct(key);
+    readStream.pipe(res);
+  });
+}
+
 function postProduct() {
   router.post(`/`, uploadOptions.single("image"), async (req, res) => {
     const category = await _getCategoryFromMongoDB(req);
@@ -134,11 +149,13 @@ function postProduct() {
 
     ResponseController.validateExistence(res, file, "No image in the request");
 
-    const fileName = file.filename;
+    const result = await uploadFileProduct(file);
+
     const basePath = `${req.protocol}://${req.get(
       "host"
-    )}/public/uploads/products/`;
-    const URL = `${basePath}${fileName}`;
+    )}/api/v1/products/images/`;
+    const key = result.key.split("/")[1];
+    const URL = `${basePath}${key}`;
     let product = _createProduct(req, URL);
     product = await _saveProductFromMongoDB(product);
     ResponseController.validateExistence(
