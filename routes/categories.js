@@ -63,8 +63,10 @@ function postCategory() {
     const file = req.file;
     ResponseController.validateExistence(res, file, "No image in the request");
     const result = await uploadFile(file);
-    //FileHandler.deleteFileFromUploads(file);
-    const basePath = `${req.protocol}://${req.get("host")}/categories/images/`;
+    FileHandler.deleteFileFromUploads(file);
+    const basePath = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/categories/images/`;
     const URL = `${basePath}${result.key}`;
     console.log(URL);
     let category = _createCategory(req, URL);
