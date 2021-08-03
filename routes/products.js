@@ -30,9 +30,7 @@ deleteProduct();
 
 function getAllProducts() {
   router.get(`/`, async (req, res) => {
-    let filter = _filterProducts(req);
-
-    const productList = await _getAllProductsFromMongoDB(filter);
+    const productList = await _getAllProductsFromMongoDB(req.params.category);
 
     ResponseController.sendResponse(
       res,
@@ -42,15 +40,10 @@ function getAllProducts() {
   });
 }
 
-function _filterProducts(req) {
-  if (req.query.categories) {
-    return { category: req.query.categories.split(",") };
-  }
-  return {};
-}
-
-function _getAllProductsFromMongoDB(filter) {
-  return Product.find(filter).populate("category");
+function _getAllProductsFromMongoDB(category) {
+  return Product.find({
+    category: mongoose.Types.ObjectId(category),
+  }).populate("category");
 }
 
 function getProduct() {
