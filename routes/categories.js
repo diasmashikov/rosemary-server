@@ -6,7 +6,11 @@ const Storage = require("../helpers/storage");
 
 const ResponseController = require("../helpers/response-controller");
 const FileHandler = require("../helpers/file-handler");
-const { uploadFile, getFileStream } = require("../helpers/s3");
+const {
+  uploadFileCategory,
+  getFileCategory,
+  deleteFileCategory,
+} = require("../helpers/s3");
 
 const storage = Storage.buildStorageCategories();
 
@@ -53,7 +57,7 @@ function _getCategoryFromMongoDB(req) {
 function getCategoryImage() {
   router.get("/images/:key", (req, res) => {
     const key = req.params.key;
-    const readStream = getFileStream("imagesCategory/" + key);
+    const readStream = getFileCategory(key);
     readStream.pipe(res);
   });
 }
@@ -62,12 +66,13 @@ function postCategory() {
   router.post("/", uploadOptions.single("image"), async (req, res) => {
     const file = req.file;
     ResponseController.validateExistence(res, file, "No image in the request");
-    const result = await uploadFile(file);
+    const result = await uploadFileCategory(file);
     FileHandler.deleteFileFromUploads(file);
     const basePath = `${req.protocol}://${req.get(
       "host"
     )}/api/v1/categories/images/`;
-    const URL = `${basePath}${result.key}`;
+    const key = result.key.split("/")[1];
+    const URL = `${basePath}${key}`;
     console.log(URL);
     let category = _createCategory(req, URL);
     category = await _postCategoryToMongoDB(category);
@@ -116,7 +121,7 @@ function _updateCategoryFromMongoDB(req) {
 function deleteCategory() {
   router.delete("/:id", async (req, res) => {
     const category = await _deleteCategoryFromMongoDB(req);
-
+    _deleteCategoryFromS3(req, category);
     ResponseController.sendDeletionResponse(
       res,
       category,
@@ -127,7 +132,13 @@ function deleteCategory() {
 }
 
 function _deleteCategoryFromMongoDB(req) {
-  return Category.findByIdAndRemove(req.params.id);
+  return Category.findByIdAndDelete(req.params.id);
+}
+
+function _deleteCategoryFromS3(req, category) {
+  const imagePath = category.image.split("/");
+  const key = imagePath[imagePath.length - 1];
+  deleteFileCategory(key);
 }
 
 module.exports = router;

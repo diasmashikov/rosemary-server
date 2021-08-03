@@ -12,7 +12,7 @@ const s3 = new AWS.S3({
   secretAccessKey,
 });
 
-function uploadFile(file) {
+function uploadFileCategory(file) {
   const fileStream = fs.createReadStream(file.path);
   const uploadParams = {
     Bucket: bucketName,
@@ -23,15 +23,27 @@ function uploadFile(file) {
   return s3.upload(uploadParams).promise();
 }
 
-exports.uploadFile = uploadFile;
+exports.uploadFileCategory = uploadFileCategory;
 
-function getFileStream(fileKey) {
+function deleteFileCategory(key) {
+  return s3.deleteObject(
+    {
+      Bucket: bucketName,
+      Key: "imagesCategory/" + key,
+    },
+    function (err, data) {}
+  );
+}
+
+exports.deleteFileCategory = deleteFileCategory;
+
+function getFileCategory(fileKey) {
   const downloadParams = {
-    Key: fileKey,
+    Key: "imagesCategory/" + fileKey,
     Bucket: bucketName,
   };
 
   return s3.getObject(downloadParams).createReadStream();
 }
 
-exports.getFileStream = getFileStream;
+exports.getFileCategory = getFileCategory;
