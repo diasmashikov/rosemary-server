@@ -53,7 +53,7 @@ function _getCategoryFromMongoDB(req) {
 function getCategoryImage() {
   router.get("/images/:key", (req, res) => {
     const key = req.params.key;
-    const readStream = getFileStream(key);
+    const readStream = getFileStream("imagesCategory/" + key);
     readStream.pipe(res);
   });
 }
