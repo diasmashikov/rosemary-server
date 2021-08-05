@@ -50,7 +50,7 @@ function _getOrderFromMongoDB(req) {
     user: mongoose.Types.ObjectId(req.params.userId),
     status: "Cart",
   })
-    .populate("user", "name")
+    .populate("user", "-id -passwordHash")
     .populate({
       path: "orderItems",
       populate: {
