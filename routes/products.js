@@ -17,7 +17,7 @@ const storage = Storage.buildStorageProducts();
 
 const uploadOptions = multer({ storage: storage });
 
-getAllProducts();
+getAllProductsByCategory();
 getProduct();
 getTotalValue();
 getNumberOfProducts();
@@ -28,7 +28,7 @@ updateProduct();
 upsertProductImages();
 deleteProduct();
 
-function getAllProducts() {
+function getAllProductsByCategory() {
   router.get(`/:category`, async (req, res) => {
     const productList = await _getAllProductsFromMongoDB(req.params.category);
 

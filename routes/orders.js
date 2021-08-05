@@ -1,6 +1,8 @@
 const { Order } = require("../models/order");
 const express = require("express");
 const { OrderItem } = require("../models/order-item");
+const mongoose = require("mongoose");
+
 const ResponseController = require("../helpers/response-controller");
 
 const router = express.Router();
@@ -22,18 +24,32 @@ function getAllOrders() {
 }
 
 function _getAllOrdersFromMongoDB() {
-  return Order.find().populate("user", "name").sort({ dateOrdered: -1 });
+  return Order.find()
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
 }
 
 function getOrder() {
-  router.get(`/:id`, async (req, res) => {
-    const order = await _getOrderFromMongoDB();
-    ResponseController.sendResponse(res, order, "The order is not found");
+  router.get(`/:userId/:status`, async (req, res) => {
+    const order = await _getOrderFromMongoDB(req);
+    //ResponseController.sendResponse(res, order, "The order is not found");
+    res.send(order);
   });
 }
 
-function _getOrderFromMongoDB() {
-  return Order.findById(req.params.id)
+function _getOrderFromMongoDB(req) {
+  return Order.find({
+    user: mongoose.Types.ObjectId(req.params.userId),
+    status: "Cart",
+  })
     .populate("user", "name")
     .populate({
       path: "orderItems",

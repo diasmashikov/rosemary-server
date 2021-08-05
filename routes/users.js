@@ -105,7 +105,7 @@ function _verifyPassword(req, res, user, secret) {
   if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
     const token = _signIn(user, secret);
 
-    res.status(200).send({ user: user.email, token: token });
+    res.status(200).send({ user: user.email, token: token, userId: user.id });
   } else {
     res.status(400).send("password is wrong!");
   }
