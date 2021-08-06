@@ -35,7 +35,7 @@ function getUser() {
 }
 
 function _getUserFromMongoDB(id) {
-  return User.findById(id);
+  return User.findById(id).select("-passwordHash");
 }
 
 function getNumberOfUsers() {
