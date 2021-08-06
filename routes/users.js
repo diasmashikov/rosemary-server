@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const ResponseController = require("../helpers/response-controller");
 const ResponseHandler = require("../helpers/response-handler");
 
@@ -28,18 +29,13 @@ function _getAllUsersFromMongoDB() {
 
 function getUser() {
   router.get("/:id", async (req, res) => {
-    const user = await _getUserFromMongoDB(req);
-
-    ResponseController.sendResponse(
-      res,
-      user,
-      "The user with a given ID was not found"
-    );
+    const user = await _getUserFromMongoDB(req.params.id);
+    ResponseController.sendResponse(res, user, "User not found");
   });
 }
 
-function _getUserFromMongoDB(req) {
-  return User.findById(req.params.id).select("-passwordHash");
+function _getUserFromMongoDB(id) {
+  return User.findById(id);
 }
 
 function getNumberOfUsers() {
@@ -88,7 +84,7 @@ function _postUserToMongoDB(user) {
 
 function postLoginUser() {
   router.post("/login", async (req, res) => {
-    const user = await _getUserFromMongoDB(req);
+    const user = await _getUserFromMongoDBtoPost(req);
     const secret = process.env.secret;
 
     ResponseController.validateExistence(res, user, "The user not found");
@@ -97,7 +93,7 @@ function postLoginUser() {
   });
 }
 
-function _getUserFromMongoDB(req) {
+function _getUserFromMongoDBtoPost(req) {
   return User.findOne({ email: req.body.email });
 }
 
