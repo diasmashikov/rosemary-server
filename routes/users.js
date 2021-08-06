@@ -74,6 +74,8 @@ function _createUser(req) {
       zip: req.body.zip,
       city: req.body.city,
       country: req.body.country,
+      region: req.body.region,
+      homeNumber: req.body.homeNumber,
     })
   );
 }
@@ -157,6 +159,8 @@ function _updateUserFromMongoDB(req, newPassword) {
       zip: req.body.zip,
       city: req.body.city,
       country: req.body.country,
+      region: req.body.region,
+      homeNumber: req.body.homeNumber,
     },
     { new: true }
   );
