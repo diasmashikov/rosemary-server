@@ -19,4 +19,12 @@ const contactSchema = mongoose.Schema({
   },
 });
 
+contactSchema.virtual("id").get(function () {
+  return this._id.toHexString();
+});
+
+contactSchema.set("toJSON", {
+  virtuals: true,
+});
+
 exports.Contact = mongoose.model("Contact", contactSchema);
