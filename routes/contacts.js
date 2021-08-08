@@ -44,6 +44,27 @@ function _postContactsToMongoDB(contacts) {
   return contacts.save();
 }
 
-function putContacts() {}
+function putContacts() {
+  router.put("/:id", async (req, res) => {
+    let contacts = await _updateContacts(req);
+    ResponseController.sendResponse(
+      res,
+      contacts,
+      "The contacts cannot be created"
+    );
+  });
+}
+
+function _updateContacts(req) {
+  return Contact.findByIdAndUpdate(
+    req.params.id,
+    {
+      phoneNumbers: req.body.phoneNumbers,
+      socialMedias: req.body.socialMedias,
+      workingSchedule: req.body.workingSchedule,
+    },
+    { new: true }
+  );
+}
 
 module.exports = router;
