@@ -50,6 +50,27 @@ class Storage {
       },
     });
   }
+
+  static buildStoragePromotions() {
+    return multer.diskStorage({
+      destination: function (req, file, cb) {
+        const isValid = FILE_TYPE_MAP[file.mimetype];
+        let uploadError = new Error("invalid image type");
+
+        if (isValid) {
+          uploadError = null;
+        }
+        cb(uploadError, "public/uploads/promotions");
+      },
+      filename: function (req, file, cb) {
+        const fileName = path.parse(
+          file.originalname.split(" ").join("-")
+        ).name;
+        const extension = path.extname(file.originalname);
+        cb(null, fileName + "-" + Date.now() + extension);
+      },
+    });
+  }
 }
 
 module.exports = Storage;

@@ -72,9 +72,44 @@ function getFileProduct(fileKey) {
   return s3.getObject(downloadParams).createReadStream();
 }
 
+function uploadFilePromotion(file) {
+  const fileStream = fs.createReadStream(file.path);
+  const uploadParams = {
+    Bucket: bucketName,
+    Body: fileStream,
+    Key: "imagesPromotion/" + file.filename,
+  };
+
+  return s3.upload(uploadParams).promise();
+}
+
+function deleteFilePromotion(key) {
+  return s3.deleteObject(
+    {
+      Bucket: bucketName,
+      Key: "imagesPromotion/" + key,
+    },
+    function (err, data) {}
+  );
+}
+
+function getFilePromotion(fileKey) {
+  const downloadParams = {
+    Key: "imagesPromotion/" + fileKey,
+    Bucket: bucketName,
+  };
+
+  return s3.getObject(downloadParams).createReadStream();
+}
+
 exports.uploadFileCategory = uploadFileCategory;
 exports.getFileCategory = getFileCategory;
 exports.deleteFileCategory = deleteFileCategory;
+
 exports.uploadFileProduct = uploadFileProduct;
 exports.getFileProduct = getFileProduct;
 exports.deleteFileProduct = deleteFileProduct;
+
+exports.uploadFilePromotion = uploadFilePromotion;
+exports.getFilePromotion = getFilePromotion;
+exports.deleteFilePromotion = deleteFilePromotion;
