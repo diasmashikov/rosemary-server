@@ -32,6 +32,7 @@ const productsRoutes = require("./routes/products");
 const usersRoutes = require("./routes/users");
 const ordersRoutes = require("./routes/orders");
 const promotionsRoutes = require("./routes/promotions");
+const contactsRoutes = require("./routes/contacts");
 
 const api = process.env.API_URL;
 
@@ -40,6 +41,7 @@ app.use(`${api}/products`, productsRoutes);
 app.use(`${api}/users`, usersRoutes);
 app.use(`${api}/orders`, ordersRoutes);
 app.use(`${api}/promotions`, promotionsRoutes);
+app.use(`${api}/contacts`, contactsRoutes);
 
 //Database
 mongoose
