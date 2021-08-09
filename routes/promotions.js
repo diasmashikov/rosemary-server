@@ -56,7 +56,9 @@ function postPromotion() {
     const basePath = `${req.protocol}://${req.get(
       "host"
     )}/api/v1/promotions/images/`;
-    const key = result.key.split("/")[1];
+    const keyArrays = result.key.split("/");
+    const key = keyArrays[keyArrays.length - 1];
+    console.log(key);
     const URL = `${basePath}${key}`;
     console.log(URL);
     let promotion = await _createPromotion(req, URL);
