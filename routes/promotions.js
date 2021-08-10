@@ -90,6 +90,27 @@ function _postPromotionToMongoDB(promotion) {
 
 function updatePromotion() {}
 
-function deletePromotion() {}
+function deletePromotion() {
+  router.delete("/:id", async (req, res) => {
+    const promotion = await _deletePromotionFromMongoDB(req);
+    _deletePromotionFromS3(req, promotion);
+    ResponseController.sendDeletionResponse(
+      res,
+      promotion,
+      "The promotion is deleted",
+      "The promotion is not found"
+    );
+  });
+}
+
+function _deletePromotionFromMongoDB(req) {
+  return Promotion.findByIdAndDelete(req.params.id);
+}
+
+function _deletePromotionFromS3(req, promotion) {
+  const imagePath = promotion.image.split("/");
+  const key = imagePath[imagePath.length - 1];
+  deleteFilePromotion(key);
+}
 
 module.exports = router;
