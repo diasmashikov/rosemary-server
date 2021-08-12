@@ -170,7 +170,7 @@ function _createProduct(req, URL) {
     image: URL,
     price: req.body.price,
     color: req.body.color,
-    size: req.body.size,
+    sizes: req.body.sizes,
     description: req.body.description,
     material: req.body.material,
     countryProducer: req.body.countryProducer,

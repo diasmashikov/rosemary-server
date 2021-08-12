@@ -80,6 +80,7 @@ function _createOrderItems(req) {
       let newOrderItem = new OrderItem({
         quantity: orderItem.quantity,
         product: orderItem.product,
+        pickedSize: orderItem.pickedSize,
       });
 
       newOrderItem = await newOrderItem.save();
