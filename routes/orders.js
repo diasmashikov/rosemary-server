@@ -48,7 +48,7 @@ function getOrder() {
 function _getOrderFromMongoDB(req) {
   return Order.find({
     user: mongoose.Types.ObjectId(req.params.userId),
-    status: "Cart",
+    status: req.params.status,
   })
     .populate("user", "-id -passwordHash")
     .populate({
@@ -130,7 +130,7 @@ function _postOrderToMongoDB(product) {
 }
 
 function updateOrder() {
-  router.put("/:id", async (req, res) => {
+  router.put("/:id/:status", async (req, res) => {
     const order = await _updateOrderFromMongoDB(req);
 
     ResponseController.sendResponse(res, order, "The order cannot be updated");
@@ -141,6 +141,7 @@ function _updateOrderFromMongoDB(req) {
   return Order.findByIdAndUpdate(
     req.params.id,
     {
+      orderItems: req.body.orderItems,
       status: req.body.status,
     },
     { new: true }
