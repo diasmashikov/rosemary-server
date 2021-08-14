@@ -138,7 +138,7 @@ function updateOrder() {
   });
 }
 
-function _updateOrderFromMongoDB(req) {
+function _updateOrderFromMongoDB(req, orderItems) {
   return Order.findByIdAndUpdate(
     req.params.id,
     {
