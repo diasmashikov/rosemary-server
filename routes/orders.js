@@ -131,7 +131,7 @@ function _postOrderToMongoDB(product) {
 
 function updateOrder() {
   router.put("/:id/:status", async (req, res) => {
-    const orderItems = _createOrderItems(req);
+    const orderItems = await _createOrderItems(req);
     const order = await _updateOrderFromMongoDB(req, orderItems);
 
     ResponseController.sendResponse(res, order, "The order cannot be updated");
