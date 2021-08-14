@@ -131,7 +131,8 @@ function _postOrderToMongoDB(product) {
 
 function updateOrder() {
   router.put("/:id/:status", async (req, res) => {
-    const order = await _updateOrderFromMongoDB(req);
+    const orderItems = _createOrderItems(req);
+    const order = await _updateOrderFromMongoDB(req, orderItems);
 
     ResponseController.sendResponse(res, order, "The order cannot be updated");
   });
@@ -141,7 +142,7 @@ function _updateOrderFromMongoDB(req) {
   return Order.findByIdAndUpdate(
     req.params.id,
     {
-      orderItems: req.body.orderItems,
+      orderItems: orderItems,
       status: req.body.status,
     },
     { new: true }
