@@ -81,6 +81,8 @@ function _getOrderItemsTotalPrices(orderItemsIds) {
         "product",
         "price"
       );
+      console.log(orderItem);
+      console.log(orderItem.product);
 
       const totalPrice = orderItem.product.price * orderItem.quantity;
 
@@ -131,8 +133,12 @@ function updateOrder() {
       orderItems.push(orderItemNew);
     }
 
+    const totalPrices = await _getOrderItemsTotalPrices(orderItems);
+
+    const totalPrice = _getOrderTotalPrice(totalPrices);
+
     // creating the order
-    const order = await _updateOrderFromMongoDB(req, orderItems);
+    const order = await _updateOrderFromMongoDB(req, orderItems, totalPrice);
 
     ResponseController.sendResponse(res, order, "The order cannot be updated");
   });
@@ -158,12 +164,13 @@ function _createOrderItems(req) {
   );
 }
 
-function _updateOrderFromMongoDB(req, orderItems) {
+function _updateOrderFromMongoDB(req, orderItems, totalPrice) {
   return Order.findByIdAndUpdate(
     req.params.id,
     {
       orderItems: orderItems,
       status: req.body.status,
+      totalPrice: totalPrice,
     },
     { new: true }
   );
