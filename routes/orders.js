@@ -115,11 +115,31 @@ function _postOrderToMongoDB(product) {
 
 function updateOrder() {
   router.put("/:id/:status", async (req, res) => {
-    const orderItems = await _createOrderItems(req);
+    // we are taking oldItems from a cart
+    const cartOrder = await _getOldCartItems(req);
+    // creating new orderItems from put params
+    const orderItemsNew = await _createOrderItems(req);
+    let orderItems = [];
+
+    // pushing both of them to a single array of combined
+    // old and new items
+    for (let orderItemOld of cartOrder[0].orderItems) {
+      orderItems.push(orderItemOld);
+    }
+
+    for (let orderItemNew of orderItemsNew) {
+      orderItems.push(orderItemNew);
+    }
+
+    // creating the order
     const order = await _updateOrderFromMongoDB(req, orderItems);
 
     ResponseController.sendResponse(res, order, "The order cannot be updated");
   });
+}
+
+function _getOldCartItems(req) {
+  return Order.find({ _id: mongoose.Types.ObjectId(req.params.id) });
 }
 
 function _createOrderItems(req) {
