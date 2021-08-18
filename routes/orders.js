@@ -118,29 +118,47 @@ function _postOrderToMongoDB(product) {
 function updateOrder() {
   router.put("/:id/:status", async (req, res) => {
     // we are taking oldItems from a cart
-    const cartOrder = await _getOldCartItems(req);
-    // creating new orderItems from put params
-    const orderItemsNew = await _createOrderItems(req);
-    let orderItems = [];
+    if (req.params.status == "Cart") {
+      const cartOrder = await _getOldCartItems(req);
+      // creating new orderItems from put params
+      const orderItemsNew = await _createOrderItems(req);
+      let orderItems = [];
 
-    // pushing both of them to a single array of combined
-    // old and new items
-    for (let orderItemOld of cartOrder[0].orderItems) {
-      orderItems.push(orderItemOld);
+      // pushing both of them to a single array of combined
+      // old and new items
+      for (let orderItemOld of cartOrder[0].orderItems) {
+        orderItems.push(orderItemOld);
+      }
+
+      for (let orderItemNew of orderItemsNew) {
+        orderItems.push(orderItemNew);
+      }
+
+      const totalPrices = await _getOrderItemsTotalPrices(orderItems);
+
+      const totalPrice = _getOrderTotalPrice(totalPrices);
+      const order = await _updateCartOrderFromMongoDB(
+        req,
+        orderItems,
+        totalPrice
+      );
+
+      ResponseController.sendResponse(
+        res,
+        order,
+        "The order cannot be updated"
+      );
+    } else if (req.params.status == "Pending") {
+      const order = await _updatePendingOrderFromMongoDB(req);
+
+      ResponseController.sendResponse(
+        res,
+        order,
+        "The order cannot be updated"
+      );
     }
-
-    for (let orderItemNew of orderItemsNew) {
-      orderItems.push(orderItemNew);
-    }
-
-    const totalPrices = await _getOrderItemsTotalPrices(orderItems);
-
-    const totalPrice = _getOrderTotalPrice(totalPrices);
 
     // creating the order
-    const order = await _updateOrderFromMongoDB(req, orderItems, totalPrice);
-
-    ResponseController.sendResponse(res, order, "The order cannot be updated");
   });
 }
 
@@ -164,13 +182,23 @@ function _createOrderItems(req) {
   );
 }
 
-function _updateOrderFromMongoDB(req, orderItems, totalPrice) {
+function _updateCartOrderFromMongoDB(req, orderItems, totalPrice) {
   return Order.findByIdAndUpdate(
     req.params.id,
     {
       orderItems: orderItems,
       status: req.body.status,
       totalPrice: totalPrice,
+    },
+    { new: true }
+  );
+}
+
+function _updatePendingOrderFromMongoDB(req) {
+  return Order.findByIdAndUpdate(
+    req.params.id,
+    {
+      status: req.params.status,
     },
     { new: true }
   );
