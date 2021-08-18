@@ -9,6 +9,7 @@ const router = express.Router();
 
 getAllOrders();
 getOrder();
+getInProgressOrders();
 postOrder();
 updateOrder();
 deleteOrder();
@@ -25,6 +26,27 @@ function getAllOrders() {
 
 function _getAllOrdersFromMongoDB() {
   return Order.find()
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
+}
+
+function getInProgressOrders() {
+  router.get(`/getInProgressOrders`, async (req, res) => {
+    const orderList = await _getInProgressOrdersFromMongoDB();
+    ResponseController.sendResponse(res, orderList, "The order list is empty");
+  });
+}
+
+function _getInProgressOrdersFromMongoDB() {
+  return Order.find({ status: { $in: ["Pending", "Shipping", "Shipped"] } })
     .populate({
       path: "orderItems",
       populate: {
@@ -58,6 +80,60 @@ function _getOrderFromMongoDB(req) {
         populate: "category",
       },
     });
+}
+
+function getTotalSales() {
+  router.get("/get/totalsales", async (req, res) => {
+    const totalSales = await _getTotalSalesFromMongoDB();
+
+    ResponseController.sendResponse(
+      res,
+      totalSales.pop(),
+      "The order sales cannot be generated"
+    );
+  });
+}
+
+function _getTotalSalesFromMongoDB() {
+  return Order.aggregate([
+    { $group: { _id: null, totalSales: { $sum: "$totalPrice" } } },
+  ]);
+}
+
+function getTotalOrders() {
+  router.get(`/get/count`, async (req, res) => {
+    const orderCount = await _getTotalOrdersFromMongoDB();
+
+    ResponseController.sendResponse(
+      res,
+      orderCount.toString(),
+      "There are no orders"
+    );
+  });
+}
+
+function _getTotalOrdersFromMongoDB() {
+  return Order.countDocuments((count) => count);
+}
+
+function getUserAllOrders() {
+  router.get(`/get/userorders/:userid`, async (req, res) => {
+    const userOrderList = await _getUserAllOrdersFromMongoDB(req);
+
+    ResponseController.sendResponse(res, userOrderList, "User has no orders");
+  });
+}
+
+function _getUserAllOrdersFromMongoDB(req) {
+  return Order.find({ user: req.params.userid })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: "category",
+      },
+    })
+    .sort({ dateOrdered: -1 });
 }
 
 function postOrder() {
@@ -169,9 +245,11 @@ function _getOldCartItems(req) {
 function _createOrderItems(req) {
   return Promise.all(
     req.body.orderItems.map(async (orderItem) => {
+      // orderItem.product.id is for mobile
+      // orderItem.product is for POSTMAN
       let newOrderItem = new OrderItem({
         quantity: orderItem.quantity,
-        product: orderItem.product.id,
+        product: orderItem.product,
         pickedSize: orderItem.pickedSize,
       });
 
@@ -225,60 +303,6 @@ function deleteOrder() {
         return res.status(500).json({ success: false, error: err });
       });
   });
-}
-
-function getTotalSales() {
-  router.get("/get/totalsales", async (req, res) => {
-    const totalSales = await _getTotalSalesFromMongoDB();
-
-    ResponseController.sendResponse(
-      res,
-      totalSales.pop(),
-      "The order sales cannot be generated"
-    );
-  });
-}
-
-function _getTotalSalesFromMongoDB() {
-  return Order.aggregate([
-    { $group: { _id: null, totalSales: { $sum: "$totalPrice" } } },
-  ]);
-}
-
-function getTotalOrders() {
-  router.get(`/get/count`, async (req, res) => {
-    const orderCount = await _getTotalOrdersFromMongoDB();
-
-    ResponseController.sendResponse(
-      res,
-      orderCount.toString(),
-      "There are no orders"
-    );
-  });
-}
-
-function _getTotalOrdersFromMongoDB() {
-  return Order.countDocuments((count) => count);
-}
-
-function getUserAllOrders() {
-  router.get(`/get/userorders/:userid`, async (req, res) => {
-    const userOrderList = await _getUserAllOrdersFromMongoDB(req);
-
-    ResponseController.sendResponse(res, userOrderList, "User has no orders");
-  });
-}
-
-function _getUserAllOrdersFromMongoDB(req) {
-  return Order.find({ user: req.params.userid })
-    .populate({
-      path: "orderItems",
-      populate: {
-        path: "product",
-        populate: "category",
-      },
-    })
-    .sort({ dateOrdered: -1 });
 }
 
 module.exports = router;
