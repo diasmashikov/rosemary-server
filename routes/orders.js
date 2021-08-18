@@ -51,6 +51,9 @@ function _getInProgressOrdersFromMongoDB() {
       path: "orderItems",
       populate: {
         path: "product",
+        populate: {
+          path: "category",
+        },
       },
     })
     .populate({
