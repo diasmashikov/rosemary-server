@@ -98,18 +98,23 @@ function _postCategoryToMongoDB(category) {
 function updateCategory() {
   router.put("/:id", uploadOptions.single("image"), async (req, res) => {
     const file = req.file;
+    var URL;
 
     console.log("FIX BLYAT");
     console.log(file);
 
-    const result = await uploadFileCategory(file);
+    if (file != undefined) {
+      const result = await uploadFileCategory(file);
 
-    FileHandler.deleteFileFromUploads(file);
-    const basePath = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/categories/images/`;
-    const key = result.key.split("/")[1];
-    const URL = `${basePath}${key}`;
+      FileHandler.deleteFileFromUploads(file);
+      const basePath = `${req.protocol}://${req.get(
+        "host"
+      )}/api/v1/categories/images/`;
+      const key = result.key.split("/")[1];
+      URL = `${basePath}${key}`;
+    } else {
+      URL = "";
+    }
 
     const category = await _updateCategoryFromMongoDB(req, URL);
 
@@ -124,14 +129,24 @@ function updateCategory() {
 }
 
 function _updateCategoryFromMongoDB(req, URL) {
-  return Category.findByIdAndUpdate(
-    req.params.id,
-    {
-      name: req.body.name,
-      image: URL,
-    },
-    { new: false }
-  );
+  if (URL != "") {
+    return Category.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: req.body.name,
+        image: URL,
+      },
+      { new: false }
+    );
+  } else {
+    return Category.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: req.body.name,
+      },
+      { new: true }
+    );
+  }
 }
 
 function deleteCategory() {
