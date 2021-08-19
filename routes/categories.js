@@ -99,6 +99,8 @@ function updateCategory() {
   router.put("/:id", async (req, res) => {
     const category = await _updateCategoryFromMongoDB(req);
 
+    _deleteCategoryFromS3(req, category);
+
     ResponseController.sendResponse(
       res,
       category,
@@ -114,7 +116,7 @@ function _updateCategoryFromMongoDB(req) {
       name: req.body.name,
       image: req.body.image,
     },
-    { new: true }
+    { new: false }
   );
 }
 
