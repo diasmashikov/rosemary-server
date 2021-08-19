@@ -96,8 +96,11 @@ function _postCategoryToMongoDB(category) {
 }
 
 function updateCategory() {
-  router.put("/:id", async (req, res) => {
-    var file = req.file;
+  router.put("/:id", uploadOptions.single("image"), async (req, res) => {
+    const file = req.file;
+
+    console.log("FIX BLYAT");
+    console.log(file);
 
     const result = await uploadFileCategory(file);
 
