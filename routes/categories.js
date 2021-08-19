@@ -97,7 +97,18 @@ function _postCategoryToMongoDB(category) {
 
 function updateCategory() {
   router.put("/:id", async (req, res) => {
-    const category = await _updateCategoryFromMongoDB(req);
+    var file = req.file;
+
+    const result = await uploadFileCategory(file);
+
+    FileHandler.deleteFileFromUploads(file);
+    const basePath = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/categories/images/`;
+    const key = result.key.split("/")[1];
+    const URL = `${basePath}${key}`;
+
+    const category = await _updateCategoryFromMongoDB(req, URL);
 
     _deleteCategoryFromS3(req, category);
 
@@ -109,12 +120,12 @@ function updateCategory() {
   });
 }
 
-function _updateCategoryFromMongoDB(req) {
+function _updateCategoryFromMongoDB(req, URL) {
   return Category.findByIdAndUpdate(
     req.params.id,
     {
       name: req.body.name,
-      image: req.body.image,
+      image: URL,
     },
     { new: false }
   );
@@ -123,6 +134,7 @@ function _updateCategoryFromMongoDB(req) {
 function deleteCategory() {
   router.delete("/:id", async (req, res) => {
     const category = await _deleteCategoryFromMongoDB(req);
+
     _deleteCategoryFromS3(req, category);
     ResponseController.sendDeletionResponse(
       res,
