@@ -100,9 +100,6 @@ function updateCategory() {
     const file = req.file;
     var URL;
 
-    console.log("FIX BLYAT");
-    console.log(file);
-
     if (file != undefined) {
       const result = await uploadFileCategory(file);
 
@@ -117,8 +114,9 @@ function updateCategory() {
     }
 
     const category = await _updateCategoryFromMongoDB(req, URL);
-
-    _deleteCategoryFromS3(req, category);
+    if (file != undefined) {
+      _deleteCategoryFromS3(req, category);
+    }
 
     ResponseController.sendResponse(
       res,

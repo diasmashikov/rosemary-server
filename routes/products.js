@@ -5,6 +5,8 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const multer = require("multer");
 const Storage = require("../helpers/storage");
+const FileHandler = require("../helpers/file-handler");
+
 const ResponseController = require("../helpers/response-controller");
 
 const {
@@ -25,7 +27,6 @@ getNumberOfFeaturedProducts();
 getProductImage();
 postProduct();
 updateProduct();
-upsertProductImages();
 deleteProduct();
 
 function getAllProductsByCategory() {
@@ -194,82 +195,75 @@ function updateProduct() {
       "Invalid product id"
     );
 
-    const category = await Category.findById(req.body.category);
-    ResponseController.validateExistence(res, category, "Invalid category");
-
-    const product = await Product.findById(req.params.id);
-    ResponseController.validateExistence(res, product, "Invalid product");
-
     const file = req.file;
-    let imagePath = _validateFileUpdate(req, file, product);
+    var URL;
 
-    const updatedProduct = await _updateProductFromMongoDB(req, imagePath);
+    if (file != undefined) {
+      const result = await uploadFileProduct(file);
 
-    if (!updatedProduct)
-      return res.status(500).send("the product cannot be updated!");
+      FileHandler.deleteFileFromUploads(file);
+      const basePath = `${req.protocol}://${req.get(
+        "host"
+      )}/api/v1/products/images/`;
+      const key = result.key.split("/")[1];
+      URL = `${basePath}${key}`;
+    } else {
+      URL = "";
+    }
 
-    res.send(updatedProduct);
+    const product = await _updateProductFromMongoDB(req, URL);
+
+    if (file != undefined) {
+      _deleteProductFromS3(req, product);
+    }
+
+    if (!product) return res.status(500).send("the product cannot be updated!");
+
+    res.send(product);
   });
 }
 
-function _validateFileUpdate(req, file, product) {
-  if (file) {
-    const fileName = file.filename;
-    const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
-    return `${basePath}${fileName}`;
+function _updateProductFromMongoDB(req, URL) {
+  if (URL != "") {
+    return Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: req.body.name,
+        image: URL,
+        price: req.body.price,
+        color: req.body.color,
+        sizes: req.body.sizes,
+        description: req.body.description,
+        material: req.body.material,
+        countryProducer: req.body.countryProducer,
+        style: req.body.style,
+        modelCharacteristics: req.body.modelCharacteristics,
+        category: req.body.category,
+        countInStock: req.body.countInStock,
+        isFeatured: req.body.isFeatured,
+      },
+      { new: false }
+    );
   } else {
-    return product.image;
+    return Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: req.body.name,
+        price: req.body.price,
+        color: req.body.color,
+        sizes: req.body.sizes,
+        description: req.body.description,
+        material: req.body.material,
+        countryProducer: req.body.countryProducer,
+        style: req.body.style,
+        modelCharacteristics: req.body.modelCharacteristics,
+        category: req.body.category,
+        countInStock: req.body.countInStock,
+        isFeatured: req.body.isFeatured,
+      },
+      { new: true }
+    );
   }
-}
-
-function _updateProductFromMongoDB(req, imagePath) {
-  return Product.findByIdAndUpdate(
-    req.params.id,
-    {
-      name: req.body.name,
-      description: req.body.description,
-      image: imagePath,
-      price: req.body.price,
-      category: req.body.category,
-      countInStock: req.body.countInStock,
-      isFeatured: req.body.isFeatured,
-    },
-    { new: true }
-  );
-}
-
-function upsertProductImages() {
-  router.put(
-    "/gallery-images/:id",
-    uploadOptions.array("images", 10),
-    async (req, res) => {
-      if (!mongoose.isValidObjectId(req.params.id)) {
-        return res.status(400).send("Invalid Product Id");
-      }
-      const files = req.files;
-      let imagesPaths = [];
-      const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
-
-      if (files) {
-        files.map((file) => {
-          imagesPaths.push(`${basePath}${file.filename}`);
-        });
-      }
-
-      const product = await Product.findByIdAndUpdate(
-        req.params.id,
-        {
-          images: imagesPaths,
-        },
-        { new: true }
-      );
-
-      if (!product)
-        return res.status(500).send("the gallery cannot be updated!");
-
-      res.send(product);
-    }
-  );
 }
 
 function deleteProduct() {
@@ -291,6 +285,12 @@ function deleteProduct() {
         return res.status(500).json({ success: false, error: err });
       });
   });
+}
+
+function _deleteProductFromS3(req, product) {
+  const imagePath = product.image.split("/");
+  const key = imagePath[imagePath.length - 1];
+  deleteFileProduct(key);
 }
 
 module.exports = router;
