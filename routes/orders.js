@@ -13,6 +13,7 @@ getInProgressOrders();
 postOrder();
 updateOrder();
 deleteOrder();
+deleteOrderItem();
 getTotalSales();
 getTotalOrders();
 getUserAllOrders();
@@ -194,6 +195,10 @@ function _postOrderToMongoDB(product) {
   return product.save();
 }
 
+function deleteCartItem() {
+  router.put("/:id/");
+}
+
 function updateOrder() {
   router.put("/:id/:status", async (req, res) => {
     // we are taking oldItems from a cart
@@ -306,6 +311,34 @@ function deleteOrder() {
         return res.status(500).json({ success: false, error: err });
       });
   });
+}
+
+function deleteOrderItem() {
+  router.put("/orderItems/:idOrder/:idOrderItem", async (req, res) => {
+    const order = await _deleteOrderItemFromListFromMongoDB(req);
+    const orderItem = await _deleteOrderItemFromMongoDB(req);
+
+    ResponseController.sendDeletionResponse(
+      res,
+      orderItem,
+      "The order item is deleted",
+      "The order item is not found"
+    );
+  });
+}
+
+function _deleteOrderItemFromListFromMongoDB(req) {
+  return Order.findByIdAndUpdate(
+    req.params.idOrder,
+    {
+      orderItems: req.body.orderItems,
+    },
+    { new: false }
+  );
+}
+
+function _deleteOrderItemFromMongoDB(req) {
+  return OrderItem.findByIdAndDelete(req.params.idOrderItem);
 }
 
 module.exports = router;
