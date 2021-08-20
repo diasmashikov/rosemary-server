@@ -195,10 +195,6 @@ function _postOrderToMongoDB(product) {
   return product.save();
 }
 
-function deleteCartItem() {
-  router.put("/:id/");
-}
-
 function updateOrder() {
   router.put("/:id/:status", async (req, res) => {
     // we are taking oldItems from a cart
@@ -257,7 +253,7 @@ function _createOrderItems(req) {
       // orderItem.product is for POSTMAN
       let newOrderItem = new OrderItem({
         quantity: orderItem.quantity,
-        product: orderItem.product.id,
+        product: orderItem.id,
         pickedSize: orderItem.pickedSize,
       });
 
