@@ -257,7 +257,7 @@ function _createOrderItems(req) {
       // orderItem.product is for POSTMAN
       let newOrderItem = new OrderItem({
         quantity: orderItem.quantity,
-        product: orderItem.product,
+        product: orderItem.product.id,
         pickedSize: orderItem.pickedSize,
       });
 
