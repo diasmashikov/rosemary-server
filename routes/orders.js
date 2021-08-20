@@ -4,6 +4,7 @@ const { OrderItem } = require("../models/order-item");
 const mongoose = require("mongoose");
 
 const ResponseController = require("../helpers/response-controller");
+const { Product } = require("../models/product");
 
 const router = express.Router();
 
@@ -246,10 +247,14 @@ function updateOrder() {
       );
     } else if ((req.params.status = "Shipped")) {
       const order = await _updateOrderStatusFromMongoDB(req);
+      const productUpdated = await _removeQuantitiesFromBoughtProducts(
+        req,
+        order
+      );
 
       ResponseController.sendResponse(
         res,
-        order,
+        productUpdated,
         "The order cannot be updated"
       );
     } else if ((req.params.status = "Cancelled")) {
@@ -257,6 +262,22 @@ function updateOrder() {
 
     // creating the order
   });
+}
+
+function _removeQuantitiesFromBoughtProducts(req, order) {
+  console.log(order.orderItems);
+  return Promise.all(
+    order.orderItems.map(async (orderItem) => {
+      var orderItemFetched = await OrderItem.findById(orderItem);
+      const product = await Product.findById(orderItemFetched.product);
+      console.log(product);
+      console.log(product.countInStock);
+      console.log(orderItemFetched.quantity);
+      return await Product.findByIdAndUpdate(product._id, {
+        countInStock: product.countInStock - orderItemFetched.quantity,
+      });
+    })
+  );
 }
 
 function _updateOrderStatusFromMongoDB(req) {
