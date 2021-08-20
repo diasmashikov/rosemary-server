@@ -249,6 +249,9 @@ function _getOldCartItems(req) {
 function _createOrderItems(req) {
   return Promise.all(
     req.body.orderItems.map(async (orderItem) => {
+      if (typeof orderItem.product != "string") {
+        orderItem.product = orderItem.product.id;
+      }
       // orderItem.product.id is for mobile
       // orderItem.product is for POSTMAN
       let newOrderItem = new OrderItem({
