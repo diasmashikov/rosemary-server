@@ -229,17 +229,44 @@ function updateOrder() {
         "The order cannot be updated"
       );
     } else if (req.params.status == "Pending") {
-      const order = await _updatePendingOrderFromMongoDB(req);
+      const order = await _updateOrderStatusFromMongoDB(req);
 
       ResponseController.sendResponse(
         res,
         order,
         "The order cannot be updated"
       );
+    } else if (req.params.status == "Shipping") {
+      const order = await _updateOrderStatusFromMongoDB(req);
+
+      ResponseController.sendResponse(
+        res,
+        order,
+        "The order cannot be updated"
+      );
+    } else if ((req.params.status = "Shipped")) {
+      const order = await _updateOrderStatusFromMongoDB(req);
+
+      ResponseController.sendResponse(
+        res,
+        order,
+        "The order cannot be updated"
+      );
+    } else if ((req.params.status = "Cancelled")) {
     }
 
     // creating the order
   });
+}
+
+function _updateOrderStatusFromMongoDB(req) {
+  return Order.findByIdAndUpdate(
+    req.params.id,
+    {
+      status: req.params.status,
+    },
+    { new: true }
+  );
 }
 
 function _getOldCartItems(req) {
@@ -274,16 +301,6 @@ function _updateCartOrderFromMongoDB(req, orderItems, totalPrice) {
       orderItems: orderItems,
       status: req.body.status,
       totalPrice: totalPrice,
-    },
-    { new: true }
-  );
-}
-
-function _updatePendingOrderFromMongoDB(req) {
-  return Order.findByIdAndUpdate(
-    req.params.id,
-    {
-      status: req.params.status,
     },
     { new: true }
   );
