@@ -270,10 +270,7 @@ function _removeQuantitiesFromBoughtProducts(req, order) {
     order.orderItems.map(async (orderItem) => {
       var orderItemFetched = await OrderItem.findById(orderItem);
       const product = await Product.findById(orderItemFetched.product);
-      console.log(product);
-      console.log(product.countInStock);
-      console.log(orderItemFetched.quantity);
-      return await Product.findByIdAndUpdate(product._id, {
+      await Product.findByIdAndUpdate(product._id, {
         countInStock: product.countInStock - orderItemFetched.quantity,
       });
     })
