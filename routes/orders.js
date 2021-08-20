@@ -164,7 +164,7 @@ function _getOrderItemsTotalPrices(orderItemsIds) {
       console.log(orderItem);
       console.log(orderItem.product);
 
-      const totalPrice = orderItem.product.price * orderItem.quantity;
+      const totalPrice = orderItem.price * orderItem.quantity;
 
       return totalPrice;
     })
