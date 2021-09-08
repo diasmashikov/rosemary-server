@@ -323,6 +323,7 @@ function _deleteOrderItemFromListFromMongoDB(req) {
     req.params.idOrder,
     {
       orderItems: req.body.orderItems,
+      totalPrice: req.body.totalPrice,
     },
     { new: false }
   );
