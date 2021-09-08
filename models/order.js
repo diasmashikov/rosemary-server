@@ -11,18 +11,22 @@ const orderSchema = mongoose.Schema({
   shippingAddress1: {
     type: String,
     required: true,
+    default: "",
   },
   city: {
     type: String,
     required: true,
+    default: "",
   },
   zip: {
     type: String,
     required: true,
+    default: "",
   },
   country: {
     type: String,
     required: true,
+    default: "",
   },
   phone: {
     type: String,
