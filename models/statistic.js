@@ -19,6 +19,13 @@ const statisticsSchema = mongoose.Schema({
     },
   },
 
+  productsValue: {
+    totalProductsValue: {
+      type: Number,
+      required: true,
+    },
+  },
+
   /*
   topSellableProducts: [
     {
@@ -38,24 +45,6 @@ const statisticsSchema = mongoose.Schema({
       },
       topAddressSale: {
         type: Number,
-      },
-    },
-  ],
-  productsValue: [
-    {
-      topProductByValueName: {
-        type: String,
-      },
-      topProductByValueValue: {
-        type: Number,
-      },
-      topProductByValueCount: {
-        type: String,
-      },
-      topProductByValueCategory: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",
-        required: true,
       },
     },
   ],

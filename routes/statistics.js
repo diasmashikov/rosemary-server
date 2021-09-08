@@ -31,10 +31,17 @@ function getStatistics() {
       theMostSellableProduct: topSellableProducts,
     };
 
+    const totalProductsValue = await _getTotalProductValue();
+    console.log(totalProductsValue);
+    const productsValueParam = {
+      totalProductsValue: totalProductsValue[0].totalProductsValue,
+    };
+
     const statistics = await _createStatistics(
       financialsParam,
       ordersParam,
-      usersParam
+      usersParam,
+      productsValueParam
     );
 
     ResponseController.sendResponse(
@@ -49,14 +56,15 @@ function _createStatistics(
   financialsParam,
   ordersParam,
   usersParam,
-  topSellableProductsParam /*, topSellableAddressesParam, productsValueParam*/
+  productsValueParam
+  /*, topSellableAddressesParam, productsValueParam*/
 ) {
   return _saveStatisticsFromMongoDB(
     new Statistics({
       financials: financialsParam,
       orders: ordersParam,
       users: usersParam,
-      topSellableProducts: topSellableProductsParam,
+      productsValue: productsValueParam,
       /*
         topSellableProducts: topSellableProductsParam,
         topSellableAddresses: topSellableAddressesParam,
@@ -74,6 +82,21 @@ function _saveStatisticsFromMongoDB(statistics) {
 function _getTotalSalesFromMongoDB() {
   return Order.aggregate([
     { $group: { _id: null, totalSales: { $sum: "$totalPrice" } } },
+  ]);
+}
+
+function _getTotalProductValue() {
+  return Product.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalProductsValue: {
+          $sum: {
+            $multiply: ["$countInStock", "$price"],
+          },
+        },
+      },
+    },
   ]);
 }
 
