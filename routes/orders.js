@@ -15,9 +15,6 @@ postOrder();
 updateOrder();
 deleteOrder();
 deleteOrderItem();
-getTotalSales();
-getTotalOrders();
-getUserAllOrders();
 
 function getAllOrders() {
   router.get(`/`, async (req, res) => {
@@ -85,48 +82,6 @@ function _getOrderFromMongoDB(req) {
         populate: "category",
       },
     });
-}
-
-function getTotalSales() {
-  router.get("/get/totalsales", async (req, res) => {
-    const totalSales = await _getTotalSalesFromMongoDB();
-
-    ResponseController.sendResponse(
-      res,
-      totalSales.pop(),
-      "The order sales cannot be generated"
-    );
-  });
-}
-
-function _getTotalSalesFromMongoDB() {
-  return Order.aggregate([
-    { $group: { _id: null, totalSales: { $sum: "$totalPrice" } } },
-  ]);
-}
-
-function getTotalOrders() {
-  router.get(`/get/count`, async (req, res) => {
-    const orderCount = await _getTotalOrdersFromMongoDB();
-
-    ResponseController.sendResponse(
-      res,
-      orderCount.toString(),
-      "There are no orders"
-    );
-  });
-}
-
-function _getTotalOrdersFromMongoDB() {
-  return Order.countDocuments((count) => count);
-}
-
-function getUserAllOrders() {
-  router.get(`/get/userorders/:userid`, async (req, res) => {
-    const userOrderList = await _getUserAllOrdersFromMongoDB(req);
-
-    ResponseController.sendResponse(res, userOrderList, "User has no orders");
-  });
 }
 
 function _getUserAllOrdersFromMongoDB(req) {
@@ -269,8 +224,10 @@ function _removeQuantitiesFromBoughtProducts(req, order) {
   return Promise.all(
     order.orderItems.map(async (orderItem) => {
       var orderItemFetched = await OrderItem.findById(orderItem);
-      const product = await Product.findById(orderItemFetched.product);
-      await Product.findByIdAndUpdate(product._id, {
+      var product = await Product.findById(orderItemFetched.product);
+      console.log(orderItemFetched);
+      console.log(product);
+      return await Product.findByIdAndUpdate(product._id, {
         countInStock: product.countInStock - orderItemFetched.quantity,
       });
     })
