@@ -25,10 +25,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
-  apartment: {
-    type: String,
-    default: "",
-  },
   zip: {
     type: String,
     default: "",

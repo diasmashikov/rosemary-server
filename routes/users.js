@@ -155,7 +155,6 @@ function _updateUserFromMongoDB(req, newPassword) {
       phone: req.body.phone,
       isAdmin: req.body.isAdmin,
       street: req.body.street,
-      apartment: req.body.apartment,
       zip: req.body.zip,
       city: req.body.city,
       country: req.body.country,
