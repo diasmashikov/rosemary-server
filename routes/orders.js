@@ -139,6 +139,7 @@ function _createOrder(req, orderItemsIds, totalPrice) {
       city: req.body.city,
       zip: req.body.zip,
       country: req.body.country,
+      region: req.body.region,
       phone: req.body.phone,
       status: req.body.status,
       totalPrice: totalPrice,

@@ -28,6 +28,11 @@ const orderSchema = mongoose.Schema({
     required: true,
     default: "",
   },
+  region: {
+    type: String,
+    required: true,
+    default: "",
+  },
   phone: {
     type: String,
     required: true,
