@@ -12,6 +12,7 @@ const router = express.Router();
 getAllOrders();
 getOrder();
 getInProgressOrders();
+getMyOrders();
 postOrder();
 updateOrder();
 deleteOrder();
@@ -30,6 +31,58 @@ function _getAllOrdersFromMongoDB() {
       path: "orderItems",
       populate: {
         path: "product",
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
+}
+
+function getMyOrders() {
+  router.get(`/getMyOrders/:userId`, async (req, res) => {
+    const activeOrders = await _getMyActiveOrdersFromMongoDB(req);
+    const historyOrders = await _getMyHistoryOrdersFromMongoDB(req);
+    const ordersList = {
+      activeOrders: activeOrders,
+      historyOrders: historyOrders,
+    };
+    ResponseController.sendResponse(res, ordersList, "The order list is empty");
+  });
+}
+
+function _getMyActiveOrdersFromMongoDB(req) {
+  return Order.find({
+    status: { $in: ["Pending", "Shipping"] },
+    user: mongoose.Types.ObjectId(req.params.userId),
+  })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: {
+          path: "category",
+        },
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
+}
+
+function _getMyHistoryOrdersFromMongoDB(req) {
+  return Order.find({
+    status: { $in: ["Shipped"] },
+    user: mongoose.Types.ObjectId(req.params.userId),
+  })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: {
+          path: "category",
+        },
       },
     })
     .populate({
