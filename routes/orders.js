@@ -2,6 +2,7 @@ const { Order } = require("../models/order");
 const express = require("express");
 const { OrderItem } = require("../models/order-item");
 const mongoose = require("mongoose");
+moment = require("moment-timezone");
 
 const ResponseController = require("../helpers/response-controller");
 const { Product } = require("../models/product");
@@ -111,6 +112,7 @@ function _getInProgressShippedOrdersFromMongoDB(req) {
 function getOrder() {
   router.get(`/:userId/:status`, async (req, res) => {
     const order = await _getOrderFromMongoDB(req);
+
     //ResponseController.sendResponse(res, order, "The order is not found");
     res.send(order);
   });
@@ -283,11 +285,16 @@ function _removeQuantitiesFromBoughtProducts(req, order) {
 }
 
 function _updateOrderStatusFromMongoDB(req) {
+  console.log();
+  var date = new Date().toLocaleString("en-GB", {
+    hour12: false,
+    timeZone: "Asia/Almaty",
+  });
   return Order.findByIdAndUpdate(
     req.params.id,
     {
       status: req.params.status,
-      dateOrdered: Date.now,
+      dateOrdered: date,
     },
     { new: true }
   );

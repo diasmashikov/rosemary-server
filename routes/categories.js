@@ -26,6 +26,7 @@ deleteCategory();
 function getAllCategories() {
   router.get(`/`, async (req, res) => {
     const categoryList = await _getAllCategoriesFromMongoDB();
+
     ResponseController.sendResponse(
       res,
       categoryList,
