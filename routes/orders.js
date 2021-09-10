@@ -287,6 +287,7 @@ function _updateOrderStatusFromMongoDB(req) {
     req.params.id,
     {
       status: req.params.status,
+      dateOrdered: Date.now,
     },
     { new: true }
   );
