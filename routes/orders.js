@@ -39,13 +39,54 @@ function _getAllOrdersFromMongoDB() {
 
 function getInProgressOrders() {
   router.get(`/getInProgressOrders`, async (req, res) => {
-    const orderList = await _getInProgressOrdersFromMongoDB();
-    ResponseController.sendResponse(res, orderList, "The order list is empty");
+    const orderListPending = await _getInProgressPendingOrdersFromMongoDB();
+    const orderListShipping = await _getInProgressShippingOrdersFromMongoDB();
+    const orderListShipped = await _getInProgressShippedOrdersFromMongoDB();
+    const ordersList = {
+      orderListPending: orderListPending,
+      orderListShipping: orderListShipping,
+      orderListShipped: orderListShipped,
+    };
+    ResponseController.sendResponse(res, ordersList, "The order list is empty");
   });
 }
 
-function _getInProgressOrdersFromMongoDB() {
-  return Order.find({ status: { $in: ["Pending", "Shipping", "Shipped"] } })
+function _getInProgressPendingOrdersFromMongoDB() {
+  return Order.find({ status: { $in: ["Pending"] } })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: {
+          path: "category",
+        },
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
+}
+
+function _getInProgressShippingOrdersFromMongoDB() {
+  return Order.find({ status: "Shipping" })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: {
+          path: "category",
+        },
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
+}
+
+function _getInProgressShippedOrdersFromMongoDB() {
+  return Order.find({ status: { $in: ["Shipped"] } })
     .populate({
       path: "orderItems",
       populate: {
