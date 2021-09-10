@@ -40,7 +40,8 @@ function _getAllOrdersFromMongoDB() {
 }
 
 function getMyOrders() {
-  router.get(`/getMyOrders/:userId`, async (req, res) => {
+  router.get(`/get/MyOrders/:userId`, async (req, res) => {
+    console.log("XYI BLYAT");
     const activeOrders = await _getMyActiveOrdersFromMongoDB(req);
     const historyOrders = await _getMyHistoryOrdersFromMongoDB(req);
     const ordersList = {
@@ -52,9 +53,11 @@ function getMyOrders() {
 }
 
 function _getMyActiveOrdersFromMongoDB(req) {
+  console.log(req.params.userId + " BLYAT");
+
   return Order.find({
     status: { $in: ["Pending", "Shipping"] },
-    user: mongoose.Types.ObjectId(req.params.userId),
+    user: req.params.userId,
   })
     .populate({
       path: "orderItems",
@@ -72,9 +75,10 @@ function _getMyActiveOrdersFromMongoDB(req) {
 }
 
 function _getMyHistoryOrdersFromMongoDB(req) {
+  console.log(req.params.userId + " BLYAT");
   return Order.find({
     status: { $in: ["Shipped"] },
-    user: mongoose.Types.ObjectId(req.params.userId),
+    user: req.params.userId,
   })
     .populate({
       path: "orderItems",
@@ -164,6 +168,7 @@ function _getInProgressShippedOrdersFromMongoDB(req) {
 
 function getOrder() {
   router.get(`/:userId/:status`, async (req, res) => {
+    console.log("DAUN?");
     const order = await _getOrderFromMongoDB(req);
 
     //ResponseController.sendResponse(res, order, "The order is not found");
