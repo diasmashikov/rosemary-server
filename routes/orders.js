@@ -41,7 +41,7 @@ function getInProgressOrders() {
   router.get(`/getInProgressOrders`, async (req, res) => {
     const orderListPending = await _getInProgressPendingOrdersFromMongoDB();
     const orderListShipping = await _getInProgressShippingOrdersFromMongoDB();
-    const orderListShipped = await _getInProgressShippedOrdersFromMongoDB();
+    const orderListShipped = await _getInProgressShippedOrdersFromMongoDB(req);
     const ordersList = {
       orderListPending: orderListPending,
       orderListShipping: orderListShipping,
@@ -85,8 +85,14 @@ function _getInProgressShippingOrdersFromMongoDB() {
     .sort({ dateOrdered: -1 });
 }
 
-function _getInProgressShippedOrdersFromMongoDB() {
-  return Order.find({ status: { $in: ["Shipped"] } })
+function _getInProgressShippedOrdersFromMongoDB(req) {
+  return Order.find({
+    status: { $in: ["Shipped"] },
+    dateOrdered: {
+      $gte: new Date(req.body.year, req.body.month - 1, req.body.day),
+      $lt: new Date(req.body.year, req.body.month - 1, req.body.day + 1),
+    },
+  })
     .populate({
       path: "orderItems",
       populate: {
