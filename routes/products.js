@@ -11,6 +11,7 @@ const ResponseController = require("../helpers/response-controller");
 
 const {
   uploadFileProduct,
+  uploadFilesProduct,
   getFileProduct,
   deleteFileProduct,
 } = require("../helpers/s3");
@@ -126,49 +127,82 @@ function _getNumberOfFeaturedProductsFromMongoDB(count) {
 }
 
 function getProductImage() {
-  router.get("/images/:key", (req, res) => {
-    const key = req.params.key;
-    const readStream = getFileProduct(key);
+  router.get("/images/:keyFolder/:keyImage", (req, res) => {
+    const keyFolder = req.params.keyFolder;
+    const keyImage = req.params.keyImage;
+
+    const readStream = getFileProduct(keyFolder, keyImage);
     readStream.pipe(res);
   });
 }
 
 function postProduct() {
-  router.post(`/`, uploadOptions.single("image"), async (req, res) => {
-    const category = await _getCategoryFromMongoDB(req);
+  router.post(
+    `/`,
+    uploadOptions.fields([
+      { name: "image", maxCount: 1 },
+      { name: "images", maxCount: 10 },
+    ]),
+    async (req, res) => {
+      const category = await _getCategoryFromMongoDB(req);
 
-    ResponseController.validateExistence(res, category, "Invalid Category");
+      ResponseController.validateExistence(res, category, "Invalid Category");
 
-    const file = req.file;
+      const file = req.files.image[0];
+      const files = req.files.images;
 
-    ResponseController.validateExistence(res, file, "No image in the request");
+      let imagesPaths = [];
 
-    const result = await uploadFileProduct(file);
+      /*
+      ResponseController.validateExistence(
+        res,
+        file,
+        "No image in the request"
+      );
+      */
 
-    const basePath = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/products/images/`;
-    const key = result.key.split("/")[1];
-    const URL = `${basePath}${key}`;
-    let product = _createProduct(req, URL);
-    product = await _saveProductFromMongoDB(product);
-    ResponseController.validateExistence(
-      res,
-      product,
-      "The product cannot be created"
-    );
-    res.send(product);
-  });
+      const result = await uploadFileProduct(file, req);
+
+      const basePath = `${req.protocol}://${req.get(
+        "host"
+      )}/api/v1/products/images/`;
+      console.log(result.key);
+      const keyFolder = result.key.split("/")[1];
+      const keyImage = result.key.split("/")[2];
+
+      const URL = `${basePath}${keyFolder}/${keyImage}`;
+
+      const results = await uploadFilesProduct(files, req);
+
+      results.map((result) => {
+        const keyFolder = result.key.split("/")[1];
+        const keyImage = result.key.split("/")[2];
+
+        const URL = `${basePath}${keyFolder}/${keyImage}`;
+        imagesPaths.push(URL);
+      });
+
+      let product = _createProduct(req, URL, imagesPaths);
+      product = await _saveProductFromMongoDB(product);
+      ResponseController.validateExistence(
+        res,
+        product,
+        "The product cannot be created"
+      );
+      res.send(product);
+    }
+  );
 }
 
 function _getCategoryFromMongoDB(req) {
   return Category.findById(req.body.category);
 }
 
-function _createProduct(req, URL) {
+function _createProduct(req, URL, imagesPaths) {
   return new Product({
     name: req.body.name,
     image: URL,
+    images: imagesPaths,
     price: req.body.price,
     color: req.body.color,
     sizes: req.body.sizes,

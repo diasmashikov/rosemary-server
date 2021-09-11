@@ -42,15 +42,41 @@ function getFileCategory(fileKey) {
   return s3.getObject(downloadParams).createReadStream();
 }
 
-function uploadFileProduct(file) {
+function uploadFileProduct(file, req) {
   const fileStream = fs.createReadStream(file.path);
   const uploadParams = {
     Bucket: bucketName,
     Body: fileStream,
-    Key: "imagesProduct/" + file.filename,
+    Key:
+      "imagesProduct/" +
+      `${req.body.name.split(" ").join("-")}-${req.body.color}/${
+        file.filename
+      }`,
   };
 
+  console.log(file.filename);
+
   return s3.upload(uploadParams).promise();
+}
+
+function uploadFilesProduct(files, req) {
+  const results = Promise.all(
+    files.map((file) => {
+      const fileStream = fs.createReadStream(file.path);
+      const uploadParams = {
+        Bucket: bucketName,
+        Body: fileStream,
+        Key:
+          "imagesProduct/" +
+          `${req.body.name.split(" ").join("-")}-${req.body.color}/${
+            file.filename
+          }`,
+      };
+      return s3.upload(uploadParams).promise();
+    })
+  );
+
+  return results;
 }
 
 function deleteFileProduct(key) {
@@ -63,9 +89,9 @@ function deleteFileProduct(key) {
   );
 }
 
-function getFileProduct(fileKey) {
+function getFileProduct(keyFolder, keyImage) {
   const downloadParams = {
-    Key: "imagesProduct/" + fileKey,
+    Key: "imagesProduct/" + keyFolder + "/" + keyImage,
     Bucket: bucketName,
   };
 
@@ -107,6 +133,7 @@ exports.getFileCategory = getFileCategory;
 exports.deleteFileCategory = deleteFileCategory;
 
 exports.uploadFileProduct = uploadFileProduct;
+exports.uploadFilesProduct = uploadFilesProduct;
 exports.getFileProduct = getFileProduct;
 exports.deleteFileProduct = deleteFileProduct;
 
