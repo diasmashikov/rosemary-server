@@ -14,6 +14,7 @@ const {
   uploadFilesProduct,
   getFileProduct,
   deleteFileProduct,
+  deleteFilesFolderProduct,
 } = require("../helpers/s3");
 
 const storage = Storage.buildStorageProducts();
@@ -314,9 +315,24 @@ function deleteProduct() {
 }
 
 function _deleteProductFromS3(req, product) {
+  // deleting image
   const imagePath = product.image.split("/");
-  const key = imagePath[imagePath.length - 1];
-  deleteFileProduct(key);
+  const keyFolder = imagePath[imagePath.length - 2];
+  const keyImage = imagePath[imagePath.length - 1];
+
+  deleteFileProduct(keyFolder, keyImage);
+
+  // deleting all images[]
+  const imagesPaths = product.images;
+
+  imagesPaths.map((image) => {
+    const imagePath = image.split("/");
+    const keyFolderMultiple = imagePath[imagePath.length - 2];
+    const keyImageMultiple = imagePath[imagePath.length - 1];
+    deleteFileProduct(keyFolderMultiple, keyImageMultiple);
+  });
+
+  deleteFilesFolderProduct(keyFolder);
 }
 
 module.exports = router;

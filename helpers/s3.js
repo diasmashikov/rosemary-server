@@ -79,11 +79,21 @@ function uploadFilesProduct(files, req) {
   return results;
 }
 
-function deleteFileProduct(key) {
+function deleteFileProduct(keyFolder, keyImage) {
   return s3.deleteObject(
     {
       Bucket: bucketName,
-      Key: "imagesProduct/" + key,
+      Key: "imagesProduct/" + `${keyFolder}/${keyImage}`,
+    },
+    function (err, data) {}
+  );
+}
+
+function deleteFilesFolderProduct(keyFolder) {
+  return s3.deleteObject(
+    {
+      Bucket: bucketName,
+      Key: "imagesProduct/" + `${keyFolder}`,
     },
     function (err, data) {}
   );
@@ -136,6 +146,7 @@ exports.uploadFileProduct = uploadFileProduct;
 exports.uploadFilesProduct = uploadFilesProduct;
 exports.getFileProduct = getFileProduct;
 exports.deleteFileProduct = deleteFileProduct;
+exports.deleteFilesFolderProduct = deleteFilesFolderProduct;
 
 exports.uploadFilePromotion = uploadFilePromotion;
 exports.getFilePromotion = getFilePromotion;
