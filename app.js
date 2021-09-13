@@ -35,6 +35,7 @@ const promotionsRoutes = require("./routes/promotions");
 const contactsRoutes = require("./routes/contacts");
 const askedQuestionsRoutes = require("./routes/asked-questions");
 const statisticsRoutes = require("./routes/statistics");
+const favoritesRoutes = require("./routes/favorites");
 
 const api = process.env.API_URL;
 
@@ -46,6 +47,7 @@ app.use(`${api}/promotions`, promotionsRoutes);
 app.use(`${api}/contacts`, contactsRoutes);
 app.use(`${api}/askedQuestions`, askedQuestionsRoutes);
 app.use(`${api}/statistics`, statisticsRoutes);
+app.use(`${api}/favorites`, favoritesRoutes);
 
 //Database
 mongoose
