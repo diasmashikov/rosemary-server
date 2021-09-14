@@ -99,14 +99,32 @@ function _updateFavoriteFromMongoDB(favoriteId, products) {
 
 function deleteFavorite() {
   router.delete("/:favoriteId", async (req, res) => {
-    const favorite = await _deleteFavoriteFromMongoDB(req);
+    let favoriteList = await _getAllByFavoritesByUserFromMongoDB(req.body.user);
 
-    ResponseController.sendDeletionResponse(
-      res,
-      favorite,
-      "The favorite is deleted",
-      "The favorite is not found"
-    );
+    if (favoriteList[0].products.length > 1) {
+      let newProducts = favoriteList[0].products;
+      console.log(newProducts + " BEFORE");
+      newProducts = newProducts.filter((item) => item != req.body.itemToDelete);
+      console.log(newProducts + " AFTER");
+      let favorite = await _updateFavoriteFromMongoDB(
+        favoriteList[0]._id,
+        newProducts
+      );
+      ResponseController.sendResponse(
+        res,
+        favorite,
+        "The favorite cannot be updated"
+      );
+    } else {
+      const favorite = await _deleteFavoriteFromMongoDB(req);
+
+      ResponseController.sendDeletionResponse(
+        res,
+        favorite,
+        "The favorite is deleted",
+        "The favorite is not found"
+      );
+    }
   });
 }
 
