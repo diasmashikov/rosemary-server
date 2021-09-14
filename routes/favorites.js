@@ -17,7 +17,7 @@ function getAllFavoritesByUser() {
   router.get(`/:userId`, async (req, res) => {
     const favoritesList = await _getAllByFavoritesByUserFromMongoDB(
       req.params.userId
-    ).populate("products");
+    ).populate({ path: "products", populate: "category" });
 
     ResponseController.sendResponse(
       res,
