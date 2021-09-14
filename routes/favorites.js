@@ -15,7 +15,9 @@ deleteFavorite();
 
 function getAllFavoritesByUser() {
   router.get(`/:userId`, async (req, res) => {
-    const favoritesList = await _getAllByFavoritesByUserFromMongoDB();
+    const favoritesList = await _getAllByFavoritesByUserFromMongoDB(
+      req.params.userId
+    );
 
     ResponseController.sendResponse(
       res,
@@ -25,18 +27,34 @@ function getAllFavoritesByUser() {
   });
 }
 
-function _getAllByFavoritesByUserFromMongoDB() {
-  return Favorite.find();
+function _getAllByFavoritesByUserFromMongoDB(userId) {
+  return Favorite.find({ user: mongoose.Types.ObjectId(userId) });
 }
 
 function postFavorite() {
   router.post("/", async (req, res) => {
-    let favorite = await _createFavorite(req);
-    ResponseController.sendResponse(
-      res,
-      favorite,
-      "The favorite cannot be created"
-    );
+    let favoriteList = await _getAllByFavoritesByUserFromMongoDB(req.body.user);
+    console.log(favoriteList);
+    if (favoriteList.length > 0) {
+      let newProducts = favoriteList[0].products;
+      newProducts.push(...req.body.products);
+      let favorite = await _updateFavoriteFromMongoDB(
+        favoriteList[0]._id,
+        newProducts
+      );
+      ResponseController.sendResponse(
+        res,
+        favorite,
+        "The favorite cannot be updated"
+      );
+    } else {
+      let favorite = await _createFavorite(req);
+      ResponseController.sendResponse(
+        res,
+        favorite,
+        "The favorite cannot be created"
+      );
+    }
   });
 }
 
@@ -55,7 +73,10 @@ function _postFavoriteToMongoDB(favorite) {
 
 function updateFavorite() {
   router.put("/:favoriteId", async (req, res) => {
-    const favorite = await _updateFavoriteFromMongoDB(req);
+    const favorite = await _updateFavoriteFromMongoDB(
+      req.params.favoriteId,
+      req.body.products
+    );
     ResponseController.sendResponse(
       res,
       favorite,
@@ -64,11 +85,11 @@ function updateFavorite() {
   });
 }
 
-function _updateFavoriteFromMongoDB(req) {
+function _updateFavoriteFromMongoDB(favoriteId, products) {
   return Favorite.findByIdAndUpdate(
-    req.params.favoriteId,
+    favoriteId,
     {
-      products: req.body.products,
+      products: products,
     },
     { new: true }
   );
