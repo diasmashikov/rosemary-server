@@ -351,7 +351,7 @@ function _updateOrderStatusFromMongoDB(req) {
   return Order.findByIdAndUpdate(
     req.params.id,
     {
-      status: req.params.status,
+      status: req.body.status,
       dateOrdered: date,
     },
     { new: true }
