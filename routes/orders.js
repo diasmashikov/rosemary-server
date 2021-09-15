@@ -344,10 +344,8 @@ function _removeQuantitiesFromBoughtProducts(req, order) {
 
 function _updateOrderStatusFromMongoDB(req) {
   console.log();
-  var date = new Date().toLocaleString("en-GB", {
-    hour12: false,
-    timeZone: "Asia/Almaty",
-  });
+  var date = Date.now();
+
   return Order.findByIdAndUpdate(
     req.params.id,
     {
