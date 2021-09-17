@@ -12,6 +12,7 @@ const { Order } = require("../models/order");
 const { AskedQuestion } = require("../models/asked_question");
 const { Contact } = require("../models/contact");
 const { Product } = require("../models/product");
+const { ConnectContactLens } = require("aws-sdk");
 
 getAllUsers();
 getUser();
@@ -83,6 +84,7 @@ function getAllEntryData() {
     let askedQuestion = listOfEntryData[1];
     let contacts = listOfEntryData[2];
     let promotions = listOfEntryData[3];
+    console.log(promotions);
     let myOrdersList = listOfEntryData[4];
     const myOrders = {
       activeOrders: myOrdersList[0],
