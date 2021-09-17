@@ -100,6 +100,8 @@ function getAllEntryData() {
         orderListShipped: ordersList[2],
       };
 
+      console.log(orders);
+
       let statisticsPromise = listOfEntryData[7];
 
       const financialsStatistics = {
