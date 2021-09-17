@@ -6,6 +6,12 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const ResponseController = require("../helpers/response-controller");
 const ResponseHandler = require("../helpers/response-handler");
+const { Promotion } = require("../models/promotion");
+const { Category } = require("../models/category");
+const { Order } = require("../models/order");
+const { AskedQuestion } = require("../models/asked_question");
+const { Contact } = require("../models/contact");
+const { Product } = require("../models/product");
 
 getAllUsers();
 getUser();
@@ -14,6 +20,208 @@ postRegisterUser();
 postLoginUser();
 updateUser();
 deleteUser();
+getAllEntryData();
+
+function getAllEntryData() {
+  router.get(`/getAllEntryData/:userId/:status/:isAdmin`, async (req, res) => {
+    let orders = [];
+    let statistics = [];
+    let listOfEntryData = await Promise.all([
+      //orderCart
+      await Order.find({
+        user: mongoose.Types.ObjectId(req.params.userId),
+        status: req.params.status,
+      })
+        .populate("user", "-id -passwordHash")
+        .populate({
+          path: "orderItems",
+          populate: {
+            path: "product",
+            populate: "category",
+          },
+        }),
+      // askedQuestions
+      await AskedQuestion.find(),
+      //contacts
+      await Contact.find(),
+      //promotions
+      await Promotion.find(),
+      //myOrders
+      await Promise.all([
+        _getMyActiveOrdersFromMongoDB,
+        _getMyHistoryOrdersFromMongoDB,
+      ]),
+      //categories
+      await Category.find(),
+      await Promise.all([
+        _getInProgressPendingOrdersFromMongoDB(),
+        _getInProgressShippingOrdersFromMongoDB(),
+        _getInProgressShippedOrdersFromMongoDB(req),
+      ]),
+      await Promise.all([
+        Order.aggregate([
+          { $group: { _id: null, totalSales: { $sum: "$totalPrice" } } },
+        ]),
+        Order.countDocuments({ status: "Shipped" }),
+        User.countDocuments((count) => count),
+
+        Product.aggregate([
+          {
+            $group: {
+              _id: null,
+              totalProductsValue: {
+                $sum: {
+                  $multiply: ["$countInStock", "$price"],
+                },
+              },
+            },
+          },
+        ]),
+      ]),
+    ]);
+    let orderCart = listOfEntryData[0];
+    let askedQuestion = listOfEntryData[1];
+    let contacts = listOfEntryData[2];
+    let promotions = listOfEntryData[3];
+    let myOrders = listOfEntryData[4];
+    let categories = listOfEntryData[5];
+
+    if (req.params.isAdmin == "true") {
+      orders = listOfEntryData[6];
+
+      let statisticsPromise = listOfEntryData[7];
+
+      const financialsStatistics = {
+        totalSales: statisticsPromise[0].pop().totalSales,
+      };
+      const ordersStatistics = {
+        totalOrders: statisticsPromise[1],
+      };
+      const usersStatistics = {
+        totalUsers: statisticsPromise[2],
+      };
+      const productsValueStatistics = {
+        totalProductsValue: statisticsPromise[3][0].totalProductsValue,
+      };
+
+      console.log(statisticsPromise[3]);
+      statistics = {
+        financialsStatistics,
+        ordersStatistics,
+        usersStatistics,
+        productsValueStatistics,
+      };
+    }
+
+    const entryData = {
+      orderCart: orderCart,
+      askedQuestion: askedQuestion,
+      contacts: contacts,
+      promotions: promotions,
+      myOrders: myOrders,
+      categories: categories,
+      orders: orders,
+      statistics: statistics,
+    };
+    ResponseController.sendResponse(res, entryData, "There are no users");
+  });
+}
+
+function _getMyActiveOrdersFromMongoDB(req) {
+  console.log(req.params.userId + " BLYAT");
+
+  return Order.find({
+    status: { $in: ["Pending", "Shipping"] },
+    user: req.params.userId,
+  })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: {
+          path: "category",
+        },
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
+}
+
+function _getMyHistoryOrdersFromMongoDB(req) {
+  console.log(req.params.userId + " BLYAT");
+  return Order.find({
+    status: { $in: ["Shipped"] },
+    user: req.params.userId,
+  })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: {
+          path: "category",
+        },
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
+}
+
+function _getInProgressPendingOrdersFromMongoDB() {
+  return Order.find({ status: { $in: ["Pending"] } })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: {
+          path: "category",
+        },
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
+}
+
+function _getInProgressShippingOrdersFromMongoDB() {
+  return Order.find({ status: "Shipping" })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: {
+          path: "category",
+        },
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
+}
+
+function _getInProgressShippedOrdersFromMongoDB(req) {
+  return Order.find({
+    status: { $in: ["Shipped"] },
+  })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: {
+          path: "category",
+        },
+      },
+    })
+    .populate({
+      path: "user",
+    })
+    .sort({ dateOrdered: -1 });
+}
 
 function getAllUsers() {
   router.get(`/`, async (req, res) => {
