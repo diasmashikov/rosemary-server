@@ -48,8 +48,8 @@ function getAllEntryData() {
       await Promotion.find(),
       //myOrders
       await Promise.all([
-        _getMyActiveOrdersFromMongoDB,
-        _getMyHistoryOrdersFromMongoDB,
+        _getMyActiveOrdersFromMongoDB(req),
+        _getMyHistoryOrdersFromMongoDB(req),
       ]),
       //categories
       await Category.find(),
@@ -136,7 +136,7 @@ function _getMyActiveOrdersFromMongoDB(req) {
 
   return Order.find({
     status: { $in: ["Pending", "Shipping"] },
-    user: req.params.userId,
+    user: mongoose.Types.ObjectId(req.params.userId),
   })
     .populate({
       path: "orderItems",
@@ -157,7 +157,7 @@ function _getMyHistoryOrdersFromMongoDB(req) {
   console.log(req.params.userId + " BLYAT");
   return Order.find({
     status: { $in: ["Shipped"] },
-    user: req.params.userId,
+    user: mongoose.Types.ObjectId(req.params.userId),
   })
     .populate({
       path: "orderItems",
