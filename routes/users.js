@@ -99,8 +99,9 @@ function getAllEntryData() {
         orderListShipping: ordersList[1],
         orderListShipped: ordersList[2],
       };
-
+      console.log("ORDERS WHERE ARE YOU");
       console.log(orders);
+      console.log(ordersList);
 
       let statisticsPromise = listOfEntryData[7];
 
