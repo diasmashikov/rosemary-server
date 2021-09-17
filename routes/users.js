@@ -83,7 +83,11 @@ function getAllEntryData() {
     let askedQuestion = listOfEntryData[1];
     let contacts = listOfEntryData[2];
     let promotions = listOfEntryData[3];
-    let myOrders = listOfEntryData[4];
+    let myOrdersList = listOfEntryData[4];
+    const myOrders = {
+      activeOrders: myOrdersList[0],
+      historyOrders: myOrdersList[1],
+    };
     let categories = listOfEntryData[5];
 
     if (req.params.isAdmin == "true") {
