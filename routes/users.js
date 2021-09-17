@@ -93,7 +93,12 @@ function getAllEntryData() {
     let categories = listOfEntryData[5];
 
     if (req.params.isAdmin == "true") {
-      orders = listOfEntryData[6];
+      let ordersList = listOfEntryData[6];
+      orders = {
+        orderListPending: ordersList[0],
+        orderListShipping: ordersList[1],
+        orderListShipped: ordersList[2],
+      };
 
       let statisticsPromise = listOfEntryData[7];
 
