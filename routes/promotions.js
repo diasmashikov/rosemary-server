@@ -64,7 +64,7 @@ function postPromotion() {
     console.log(URL);
     let promotion = await _createPromotion(req, URL);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    //await new Promise((resolve) => setTimeout(resolve, 5000));
 
     ResponseController.sendResponse(
       res,
