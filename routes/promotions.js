@@ -49,6 +49,7 @@ function getPromotionImage() {
 
 function postPromotion() {
   router.post("/", uploadOptions.single("image"), async (req, res) => {
+    console.log(req.body);
     const file = req.file;
     ResponseController.validateExistence(res, file, "No image in the request");
     const result = await uploadFilePromotion(file);
@@ -62,6 +63,7 @@ function postPromotion() {
     const URL = `${basePath}${key}`;
     console.log(URL);
     let promotion = await _createPromotion(req, URL);
+
     ResponseController.sendResponse(
       res,
       promotion,
