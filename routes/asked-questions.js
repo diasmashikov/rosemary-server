@@ -63,8 +63,8 @@ function _updateAskedQuestionFromMongoDB(req) {
   return AskedQuestion.findByIdAndUpdate(
     req.params.id,
     {
-      name: req.body.title,
-      image: req.body.description,
+      title: req.body.title,
+      description: req.body.description,
     },
     { new: true }
   );
