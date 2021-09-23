@@ -49,11 +49,11 @@ function _postAskedQuestionToMongoDB(askedQuestion) {
 
 function updateAskedQuestion() {
   router.put("/:id", async (req, res) => {
-    const category = await _updateAskedQuestionFromMongoDB(req);
+    const askedQuestion = await _updateAskedQuestionFromMongoDB(req);
 
     ResponseController.sendResponse(
       res,
-      category,
+      askedQuestion,
       "The asked question cannot be updated"
     );
   });
@@ -63,8 +63,8 @@ function _updateAskedQuestionFromMongoDB(req) {
   return AskedQuestion.findByIdAndUpdate(
     req.params.id,
     {
-      name: req.body.name,
-      image: req.body.image,
+      name: req.body.title,
+      image: req.body.description,
     },
     { new: true }
   );
