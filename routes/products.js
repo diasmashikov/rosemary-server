@@ -207,6 +207,12 @@ function _createProduct(req, URL, imagesPaths) {
     price: req.body.price,
     color: req.body.color,
     sizes: req.body.sizes,
+
+    recommended: req.body.recommended,
+    discount: req.body.discount,
+    new: req.body.discount,
+    fashionCollection: req.body.collection,
+
     description: req.body.description,
     material: req.body.material,
     countryProducer: req.body.countryProducer,
@@ -270,6 +276,12 @@ function _updateProductFromMongoDB(req, URL) {
         sizes: req.body.sizes,
         description: req.body.description,
         material: req.body.material,
+
+        recommended: req.body.recommended,
+        discount: req.body.discount,
+        new: req.body.discount,
+        fashionCollection: req.body.collection,
+
         countryProducer: req.body.countryProducer,
         style: req.body.style,
         modelCharacteristics: req.body.modelCharacteristics,
@@ -289,6 +301,12 @@ function _updateProductFromMongoDB(req, URL) {
         sizes: req.body.sizes,
         description: req.body.description,
         material: req.body.material,
+
+        recommended: req.body.recommended,
+        discount: req.body.discount,
+        new: req.body.discount,
+        fashionCollection: req.body.collection,
+
         countryProducer: req.body.countryProducer,
         style: req.body.style,
         modelCharacteristics: req.body.modelCharacteristics,

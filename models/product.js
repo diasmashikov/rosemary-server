@@ -55,7 +55,22 @@ const productSchema = mongoose.Schema({
       type: String,
     },
   },
-
+  discount: {
+    type: Number,
+    default: 0
+  },
+  fashionCollection: {
+    type: String,
+    default: "Все"
+  },
+  new: {
+    type: Boolean, 
+    default: true,
+  },
+  recommended: {
+    type: Boolean,
+    default: false,
+  },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
