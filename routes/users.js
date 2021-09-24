@@ -105,8 +105,11 @@ function getAllEntryData() {
 
       let statisticsPromise = listOfEntryData[7];
 
+      console.log(statisticsPromise[0] + " BLYAAAT")
+      console.log(typeof (typeof statisticsPromise[0]))
+
       const financialsStatistics = {
-        totalSales: statisticsPromise[0].pop().totalSales,
+        totalSales: (typeof statisticsPromise[0] == "object") ? 0 : statisticsPromise[0].pop().totalSales ,
       };
       const ordersStatistics = {
         totalOrders: statisticsPromise[1],
@@ -114,8 +117,9 @@ function getAllEntryData() {
       const usersStatistics = {
         totalUsers: statisticsPromise[2],
       };
+      console.log(typeof statisticsPromise[3][0])
       const productsValueStatistics = {
-        totalProductsValue: statisticsPromise[3][0].totalProductsValue,
+        totalProductsValue: (typeof statisticsPromise[3][0] == "undefined") ? 0 : statisticsPromise[3][0].totalProductsValue,
       };
 
       console.log(statisticsPromise[3]);
