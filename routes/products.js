@@ -154,6 +154,11 @@ function postProduct() {
 
       let imagesPaths = [];
 
+      console.log("file")
+      console.log(file)
+      console.log("files")
+      console.log(files)
+
       /*
       ResponseController.validateExistence(
         res,
