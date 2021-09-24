@@ -178,7 +178,8 @@ function postProduct() {
 
       const URL = `${basePath}${keyFolder}/${keyImage}`;
 
-      const results = await uploadFilesProduct(files, req);
+      if(files != undefined) {
+        const results = await uploadFilesProduct(files, req);
 
       results.map((result) => {
         const keyFolder = result.key.split("/")[1];
@@ -187,6 +188,8 @@ function postProduct() {
         const URL = `${basePath}${keyFolder}/${keyImage}`;
         imagesPaths.push(URL);
       });
+      }
+      
 
       let product = _createProduct(req, URL, imagesPaths);
       product = await _saveProductFromMongoDB(product);
