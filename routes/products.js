@@ -210,7 +210,7 @@ function _createProduct(req, URL, imagesPaths) {
 
     recommended: req.body.recommended,
     discount: req.body.discount,
-    new: req.body.discount,
+    newArrival: req.body.discount,
     fashionCollection: req.body.collection,
 
     description: req.body.description,
@@ -279,7 +279,7 @@ function _updateProductFromMongoDB(req, URL) {
 
         recommended: req.body.recommended,
         discount: req.body.discount,
-        new: req.body.discount,
+        newArrival: req.body.discount,
         fashionCollection: req.body.collection,
 
         countryProducer: req.body.countryProducer,
@@ -304,7 +304,7 @@ function _updateProductFromMongoDB(req, URL) {
 
         recommended: req.body.recommended,
         discount: req.body.discount,
-        new: req.body.discount,
+        newArrival: req.body.discount,
         fashionCollection: req.body.collection,
 
         countryProducer: req.body.countryProducer,

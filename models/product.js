@@ -57,13 +57,13 @@ const productSchema = mongoose.Schema({
   },
   discount: {
     type: Number,
-    default: 0
+    default: 0.0
   },
   fashionCollection: {
     type: String,
     default: "Все"
   },
-  new: {
+  newArrival: {
     type: Boolean, 
     default: true,
   },
