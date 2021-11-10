@@ -11,6 +11,8 @@ deleteAskedQuestion();
 function getAllAskedQuestions() {
   router.get(`/`, async (req, res) => {
     const askedQuestionsList = await _getAllAskedQuestionsFromMongoDB();
+    
+    
     ResponseController.sendResponse(
       res,
       askedQuestionsList,
