@@ -33,7 +33,10 @@ The Rosemary Server-side Application powers the backend of the Rosemary e-commer
 - OTP verification system for user number verification
 
 ## Demonstration
-<img width="315" alt="Screenshot 2024-02-08 at 22 16 00" src="https://github.com/diasmashikov/rosemary_server/assets/50723693/d2219738-b0bd-4d03-9af0-6aacea7d1d29">
+- Postman API endpoints and collections of the MongoDB Database
+<img width="300" height="600" alt="Screenshot 2024-02-08 at 22 16 00" src="https://github.com/diasmashikov/rosemary_server/assets/50723693/d2219738-b0bd-4d03-9af0-6aacea7d1d29">
+<img width="300" height="600" alt="Screenshot 2024-02-08 at 22 18 51" src="https://github.com/diasmashikov/rosemary_server/assets/50723693/468d1532-8baf-4cd6-b9bf-922476b0a99e">
+<img width="300" height="600" alt="Screenshot 2024-02-08 at 22 21 28" src="https://github.com/diasmashikov/rosemary_server/assets/50723693/9723a9be-f328-48e4-8b70-a9f2dda2ab29">
 
 
 
